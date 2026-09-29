@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Ionic
+node_modules/
+dist/
+.vite/
+frontend/android/
+frontend/ios/
+*.log
+
+# Env & secrets (spec §11.1)
+.env
+.env.*
+!.env.example
+
+# ML artifacts (large — use DVC or object storage)
+ml/artifacts/*.pt
+ml/artifacts/*.onnx
+ml/data/raw/
+ml/data/processed/
+
+# Editors / OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
