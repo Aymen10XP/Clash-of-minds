@@ -1,0 +1,26 @@
+{
+  "name": "mind-clash",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "npm@11.19.0",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check": "turbo run check",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e"
+  },
+  "devDependencies": {
+    "turbo": "2.11.5"
+  },
+  "allowScripts": {
+    "cypress@13.17.0": true,
+    "esbuild@0.28.2": true,
+    "core-js@3.50.0": true
+  }
+}
