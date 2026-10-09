@@ -4,13 +4,13 @@
   min-height: 112px;
   padding: 18px;
   border: 3px double rgba(180, 146, 61, 0.48);
-  border-radius: 6px;
+  border-radius: var(--game-radius-control);
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) 24px;
   align-items: center;
   gap: 14px;
   overflow: hidden;
-  color: #f4f7ff;
+  color: var(--game-color-text);
   background:
     repeating-linear-gradient(135deg, transparent 0 13px, rgba(242, 201, 76, 0.025) 13px 14px),
     linear-gradient(105deg, rgba(17, 36, 70, 0.98), rgba(6, 20, 47, 0.98));
@@ -22,7 +22,7 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+  transition: transform 160ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .game-choice-card::before {
@@ -42,7 +42,6 @@
 
 .game-choice-card:active {
   transform: scale(0.982);
-  filter: brightness(1.12);
 }
 
 .game-choice-card:focus-visible {
@@ -75,7 +74,7 @@
   border-radius: 3px;
   display: grid;
   place-items: center;
-  color: #f2c94c;
+  color: var(--game-color-accent);
   background: rgba(242, 201, 76, 0.07);
   font-size: 1.45rem;
 }
@@ -98,7 +97,7 @@
 }
 
 .game-choice-card__title {
-  color: #fff8dd;
+  color: var(--game-color-heading-warm);
   font-size: 1.05rem;
   font-weight: 850;
   line-height: 1.2;
@@ -106,7 +105,7 @@
 
 .game-choice-card__description {
   margin-top: 5px;
-  color: #9aacca;
+  color: var(--game-color-muted);
   font-size: 0.74rem;
   font-weight: 500;
   line-height: 1.35;
@@ -133,8 +132,8 @@
 }
 
 .game-choice-card--selected .game-choice-card__status {
-  border-color: #f2c94c;
-  background: #f2c94c;
+  border-color: var(--game-color-accent);
+  background: var(--game-color-accent);
   box-shadow: 0 0 14px rgba(242, 201, 76, 0.3);
 }
 

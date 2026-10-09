@@ -1,5 +1,21 @@
 :root {
   --ion-font-family: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+
+  /* Shared game palette. Page and component CSS should consume these semantic tokens. */
+  --game-color-background: #020814;
+  --game-color-background-rgb: 2, 8, 20;
+  --game-color-surface: #071a3a;
+  --game-color-surface-strong: #06132c;
+  --game-color-text: #f4f7ff;
+  --game-color-heading: #f8f2dc;
+  --game-color-heading-warm: #fff8dd;
+  --game-color-muted: #9aacca;
+  --game-color-subtle: #8fa2c5;
+  --game-color-accent: #f2c94c;
+  --game-color-accent-rgb: 242, 201, 76;
+  --game-radius-control: 6px;
+  --game-motion-enter: 520ms cubic-bezier(0.2, 0.75, 0.2, 1);
+
   --ion-color-primary: #f2c94c;
   --ion-color-primary-rgb: 242, 201, 76;
   --ion-color-primary-contrast: #06132c;

@@ -6,11 +6,17 @@ interface GameScreenHeaderProps {
   eyebrow: string;
   title: string;
   onBack: () => void;
+  backLabel?: string;
 }
 
-const GameScreenHeader: React.FC<GameScreenHeaderProps> = ({ eyebrow, title, onBack }) => (
+const GameScreenHeader: React.FC<GameScreenHeaderProps> = ({
+  eyebrow,
+  title,
+  onBack,
+  backLabel = 'Go back',
+}) => (
   <header className="game-screen-header">
-    <IonButton className="game-screen-header__back" fill="clear" onClick={onBack} aria-label="Back to main menu">
+    <IonButton className="game-screen-header__back" fill="clear" onClick={onBack} aria-label={backLabel}>
       <IonIcon icon={arrowBackOutline} slot="icon-only" />
     </IonButton>
 

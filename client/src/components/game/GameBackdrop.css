@@ -1,5 +1,5 @@
 .game-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
@@ -115,9 +115,9 @@
   height: 22px;
   opacity: 0.24;
   background:
-    linear-gradient(90deg, transparent 0 8px, #f2c94c 8px 11px, transparent 11px 19px) 0 0 / 19px 3px repeat-x,
-    linear-gradient(135deg, transparent 42%, #f2c94c 43% 56%, transparent 57%) 0 5px / 22px 12px repeat-x,
-    linear-gradient(90deg, transparent 0 8px, #f2c94c 8px 11px, transparent 11px 19px) 0 19px / 19px 3px repeat-x;
+    linear-gradient(90deg, transparent 0 8px, var(--game-color-accent) 8px 11px, transparent 11px 19px) 0 0 / 19px 3px repeat-x,
+    linear-gradient(135deg, transparent 42%, var(--game-color-accent) 43% 56%, transparent 57%) 0 5px / 22px 12px repeat-x,
+    linear-gradient(90deg, transparent 0 8px, var(--game-color-accent) 8px 11px, transparent 11px 19px) 0 19px / 19px 3px repeat-x;
   animation: game-frieze-travel 28s linear infinite;
 }
 

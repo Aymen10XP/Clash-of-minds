@@ -11,7 +11,7 @@ const GamePage: React.FC<GamePageProps> = ({ children, className = '' }) => (
   <IonPage>
     <IonContent fullscreen className={`game-page ${className}`.trim()}>
       <GameBackdrop />
-      {children}
+      <div className="game-page__content">{children}</div>
     </IonContent>
   </IonPage>
 );

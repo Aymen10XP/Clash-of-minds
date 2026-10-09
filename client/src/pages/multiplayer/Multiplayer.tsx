@@ -1,6 +1,9 @@
 import { peopleCircleOutline, podiumOutline } from 'ionicons/icons';
-import ModeSelectionPage, { type ModeSelectionChoice } from '../components/game/ModeSelectionPage';
-import { appRoutes } from '../routing/routes';
+import ModeSelectionPage, {
+  type ModeSelectionChoice,
+} from '../../components/game/ModeSelectionPage';
+import { appRoutes } from '../../routing/routes';
+import './Multiplayer.css';
 
 const multiplayerChoices: readonly ModeSelectionChoice[] = [
   {
@@ -28,6 +31,7 @@ const Multiplayer: React.FC = () => (
     description="Test your knowledge for rank, or open a private duel with a friend."
     backRoute={appRoutes.home}
     choices={multiplayerChoices}
+    className="multiplayer-page"
   />
 );
 
