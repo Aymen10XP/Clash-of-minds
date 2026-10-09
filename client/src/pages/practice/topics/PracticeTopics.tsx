@@ -1,20 +1,19 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import GameChoiceCard from '../components/game/GameChoiceCard';
-import GameSubpage from '../components/game/GameSubpage';
-import { practiceTopics } from '../features/practice/topics';
-import { playUiFeedback } from '../lib/uiFeedback';
-import { appRoutes } from '../routing/routes';
+import GameChoiceCard from '../../../components/game/GameChoiceCard';
+import GameSubpage from '../../../components/game/GameSubpage';
+import { practiceTopics } from '../../../features/practice/topics';
+import { usePressNavigation } from '../../../hooks/usePressNavigation';
+import { playUiFeedback } from '../../../lib/uiFeedback';
+import { appRoutes } from '../../../routing/routes';
 import './PracticeTopics.css';
 
 const PracticeTopics: React.FC = () => {
-  const navigate = useNavigate();
+  const { goBackAfterPress } = usePressNavigation({ delay: 140, feedback: 'light' });
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const selectedTopic = practiceTopics.find((topic) => topic.id === selectedTopicId);
 
   const handleBack = () => {
-    playUiFeedback('light');
-    navigate(appRoutes.practice);
+    goBackAfterPress(appRoutes.practice);
   };
 
   const handleTopicSelect = (topicId: string) => {
@@ -23,7 +22,12 @@ const PracticeTopics: React.FC = () => {
   };
 
   return (
-    <GameSubpage eyebrow="Focused practice" title="Topic Catalogue" onBack={handleBack}>
+    <GameSubpage
+      eyebrow="Focused practice"
+      title="Topic Catalogue"
+      onBack={handleBack}
+      className="practice-topics-page"
+    >
       <section className="topic-catalogue" aria-labelledby="topic-title">
         <div className="topic-catalogue__heading">
           <div>

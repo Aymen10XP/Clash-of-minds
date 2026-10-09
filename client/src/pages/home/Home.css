@@ -32,7 +32,7 @@
   --border-style: solid;
   --border-width: 1px;
   --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  --color: #f2c94c;
+  --color: var(--game-color-accent);
   --padding-start: 0;
   --padding-end: 0;
   width: 44px;
@@ -121,29 +121,30 @@
 }
 
 .menu-button {
-  --background: linear-gradient(105deg, rgba(17, 36, 70, 0.96), rgba(6, 20, 47, 0.96));
-  --background-hover: linear-gradient(105deg, rgba(29, 54, 97, 0.98), rgba(9, 29, 63, 0.98));
-  --background-activated: linear-gradient(105deg, rgba(42, 70, 116, 0.98), rgba(13, 38, 78, 0.98));
-  --color: #f4f7ff;
+  --opacity: 1;
+  --background: linear-gradient(105deg, rgb(17, 36, 70), rgb(6, 20, 47));
+  --background-hover: linear-gradient(105deg, rgb(29, 54, 97), rgb(9, 29, 63));
+  --background-activated: linear-gradient(105deg, rgb(42, 70, 116), rgb(13, 38, 78));
+  --color: var(--game-color-text);
   --border-color: rgba(180, 146, 61, 0.48);
   --border-style: double;
   --border-width: 3px;
-  --border-radius: 6px;
+  --border-radius: var(--game-radius-control);
   --box-shadow: inset 0 0 0 1px rgba(21, 64, 130, 0.65), inset 0 0 25px rgba(0, 3, 13, 0.3), 0 13px 36px rgba(0, 3, 13, 0.26);
   --padding-start: 11px;
   --padding-end: 13px;
   min-height: 73px;
   margin: 0;
-  opacity: 0;
+  opacity: 1;
   animation: menu-entry 480ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
   animation-delay: calc(var(--menu-order) * 75ms + 120ms);
 }
 
 .menu-button--featured {
-  --background: linear-gradient(105deg, rgba(39, 55, 76, 0.98), rgba(15, 31, 60, 0.98));
-  --background-hover: linear-gradient(105deg, rgba(54, 72, 95, 0.98), rgba(21, 42, 77, 0.98));
-  --background-activated: linear-gradient(105deg, rgba(63, 81, 104, 0.98), rgba(24, 48, 86, 0.98));
-  --color: #fff8dd;
+  --background: linear-gradient(105deg, rgb(39, 55, 76), rgb(15, 31, 60));
+  --background-hover: linear-gradient(105deg, rgb(54, 72, 95), rgb(21, 42, 77));
+  --background-activated: linear-gradient(105deg, rgb(63, 81, 104), rgb(24, 48, 86));
+  --color: var(--game-color-heading-warm);
   --border-color: rgba(242, 201, 76, 0.92);
   --box-shadow: inset 0 0 0 1px rgba(242, 201, 76, 0.18), inset 0 0 28px rgba(242, 201, 76, 0.05), 0 14px 38px rgba(242, 201, 76, 0.1);
 }
@@ -157,7 +158,7 @@
     linear-gradient(90deg, transparent 0 94%, rgba(242, 201, 76, 0.06) 94%),
     repeating-linear-gradient(135deg, transparent 0 12px, rgba(242, 201, 76, 0.025) 12px 13px);
   text-transform: none;
-  transition: transform 150ms ease, border-color 150ms ease, filter 150ms ease;
+  transition: transform 150ms ease, border-color 150ms ease;
 }
 
 .menu-button__flare {
@@ -178,7 +179,6 @@
 
 .menu-button::part(native):active {
   transform: scale(0.982);
-  filter: brightness(1.08);
 }
 
 .menu-button__number {
@@ -206,7 +206,7 @@
   border-radius: 3px;
   display: grid;
   place-items: center;
-  color: #f2c94c;
+  color: var(--game-color-accent);
   background: rgba(54, 120, 230, 0.08);
   font-size: 1.4rem;
 }
@@ -238,7 +238,7 @@
 
 .menu-button__description {
   margin-top: 3px;
-  color: #8fa2c5;
+  color: var(--game-color-subtle);
   font-size: 0.73rem;
   font-weight: 500;
   line-height: 1.25;
@@ -253,17 +253,18 @@
   z-index: 1;
   margin-left: 8px;
   flex: 0 0 auto;
-  color: #f2c94c;
+  color: var(--game-color-accent);
   font-size: 1rem;
 }
 
 .menu-button--featured .menu-button__arrow {
-  color: #f2c94c;
+  color: var(--game-color-accent);
 }
 
 .menu-button--selected {
   --background: linear-gradient(105deg, rgba(58, 78, 105, 0.99), rgba(22, 48, 88, 0.99));
   --border-color: rgba(255, 222, 116, 0.96);
+  --box-shadow: inset 0 0 0 1px rgba(242, 201, 76, 0.24), 0 0 25px rgba(242, 201, 76, 0.18);
   z-index: 3;
   pointer-events: none;
   animation: tablet-awaken 460ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
@@ -283,43 +284,16 @@
 
 .menu-button--receding {
   opacity: 0.3 !important;
-  filter: saturate(0.35);
   transform: scale(0.97);
-  transition: opacity 180ms ease, filter 180ms ease, transform 180ms ease;
-}
-
-.page-transition-veil {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  opacity: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 50% 43%, rgba(242, 201, 76, 0.18), transparent 22%),
-    rgba(2, 8, 20, 0.96);
-}
-
-.menu-page--leaving .menu-shell {
-  pointer-events: none;
-  animation: menu-depart 380ms cubic-bezier(0.55, 0, 0.8, 0.35) both;
-}
-
-.menu-page--leaving .game-backdrop {
-  animation: ambient-depart 380ms ease-in both;
-}
-
-.menu-page--leaving .page-transition-veil {
-  animation: transition-veil-in 380ms ease-in both;
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 @keyframes menu-entry {
   from {
-    opacity: 0;
     transform: translateY(14px) scale(0.99);
   }
 
   to {
-    opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
@@ -327,24 +301,18 @@
 @keyframes tablet-awaken {
   0% {
     transform: scale(1);
-    filter: brightness(1);
   }
 
   32% {
     transform: scale(0.97);
-    filter: brightness(1.35);
   }
 
   68% {
     transform: scale(1.035);
-    filter: brightness(1.75);
-    box-shadow: 0 0 0 1px rgba(242, 201, 76, 0.9), 0 0 42px rgba(242, 201, 76, 0.32);
   }
 
   100% {
     transform: scale(1.018);
-    filter: brightness(1.18);
-    box-shadow: 0 0 0 1px rgba(242, 201, 76, 0.62), 0 0 25px rgba(242, 201, 76, 0.18);
   }
 }
 
@@ -372,8 +340,6 @@
 
   45% {
     transform: scale(1.18) rotate(-4deg);
-    color: #fff3b6;
-    box-shadow: 0 0 20px rgba(242, 201, 76, 0.5);
   }
 }
 
@@ -412,37 +378,6 @@
   100% {
     opacity: 0;
     background-position: -70% 0;
-  }
-}
-
-@keyframes menu-depart {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.965);
-    filter: blur(5px);
-  }
-}
-
-@keyframes ambient-depart {
-  to {
-    opacity: 0.3;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes transition-veil-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
   }
 }
 
@@ -500,19 +435,7 @@
 
   .menu-button--selected .menu-button__flare,
   .menu-button--selected .menu-button__icon,
-  .menu-button--selected .menu-button__arrow,
-  .menu-page--leaving .menu-shell,
-  .menu-page--leaving .game-backdrop,
-  .menu-page--leaving .page-transition-veil {
+  .menu-button--selected .menu-button__arrow {
     animation: none;
-  }
-
-  .menu-page--leaving .menu-shell,
-  .menu-page--leaving .game-backdrop {
-    opacity: 0;
-  }
-
-  .menu-page--leaving .page-transition-veil {
-    opacity: 1;
   }
 }

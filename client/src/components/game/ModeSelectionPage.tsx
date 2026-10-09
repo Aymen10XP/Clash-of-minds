@@ -1,10 +1,12 @@
+import { useId } from 'react';
 import GameChoiceCard from './GameChoiceCard';
 import GameSubpage from './GameSubpage';
 import { usePressNavigation } from '../../hooks/usePressNavigation';
+import type { AppRoute } from '../../routing/routes';
 import './ModeSelectionPage.css';
 
 export interface ModeSelectionChoice {
-  route: string;
+  route: AppRoute;
   title: string;
   description: string;
   meta: string;
@@ -17,8 +19,9 @@ interface ModeSelectionPageProps {
   kicker: string;
   heading: string;
   description: string;
-  backRoute: string;
+  backRoute: AppRoute;
   choices: readonly ModeSelectionChoice[];
+  className?: string;
 }
 
 const ModeSelectionPage: React.FC<ModeSelectionPageProps> = ({
@@ -29,20 +32,22 @@ const ModeSelectionPage: React.FC<ModeSelectionPageProps> = ({
   description,
   backRoute,
   choices,
+  className = '',
 }) => {
-  const { navigateAfterPress, pendingRoute } = usePressNavigation();
+  const titleId = useId();
+  const { goBackAfterPress, navigateAfterPress, pendingRoute } = usePressNavigation();
 
   return (
     <GameSubpage
       eyebrow={eyebrow}
       title={title}
-      onBack={() => navigateAfterPress(backRoute, 'light')}
-      className={`mode-selection-page${pendingRoute ? ' mode-selection-page--leaving' : ''}`}
+      onBack={() => goBackAfterPress(backRoute)}
+      className={`mode-selection-page ${className}`.trim()}
     >
       <div className="mode-selection-content">
-        <section className="mode-selection-intro" aria-labelledby="mode-selection-title">
+        <section className="mode-selection-intro" aria-labelledby={titleId}>
           <p className="mode-selection-intro__kicker">{kicker}</p>
-          <h2 id="mode-selection-title">{heading}</h2>
+          <h2 id={titleId}>{heading}</h2>
           <p>{description}</p>
         </section>
 

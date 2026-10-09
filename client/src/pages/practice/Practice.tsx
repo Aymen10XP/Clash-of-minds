@@ -1,6 +1,9 @@
 import { libraryOutline, trophyOutline } from 'ionicons/icons';
-import ModeSelectionPage, { type ModeSelectionChoice } from '../components/game/ModeSelectionPage';
-import { appRoutes } from '../routing/routes';
+import ModeSelectionPage, {
+  type ModeSelectionChoice,
+} from '../../components/game/ModeSelectionPage';
+import { appRoutes } from '../../routing/routes';
+import './Practice.css';
 
 const practiceChoices: readonly ModeSelectionChoice[] = [
   {
@@ -19,7 +22,7 @@ const practiceChoices: readonly ModeSelectionChoice[] = [
   },
 ];
 
-const VsBot: React.FC = () => (
+const Practice: React.FC = () => (
   <ModeSelectionPage
     eyebrow="Solo training"
     title="VS Bot"
@@ -28,7 +31,8 @@ const VsBot: React.FC = () => (
     description="Climb until your first mistake, or master one field at a time."
     backRoute={appRoutes.home}
     choices={practiceChoices}
+    className="practice-page"
   />
 );
 
-export default VsBot;
+export default Practice;

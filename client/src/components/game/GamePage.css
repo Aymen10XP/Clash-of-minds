@@ -1,12 +1,25 @@
 .game-page {
-  --background: #020814;
-  --color: #f4f7ff;
+  --background: var(--game-color-background);
+  --color: var(--game-color-text);
+  position: relative;
+  isolation: isolate;
+}
+
+.game-page__content {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
 }
 
 .game-page::part(background) {
   background:
     linear-gradient(rgba(76, 145, 255, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(76, 145, 255, 0.045) 1px, transparent 1px),
-    radial-gradient(circle at 50% -10%, #153b79 0, #071a3a 31%, #020814 68%);
+    radial-gradient(
+      circle at var(--game-page-focus-x, 50%) var(--game-page-focus-y, -10%),
+      #153b79 0,
+      var(--game-color-surface) 31%,
+      var(--game-color-background) 68%
+    );
   background-size: 40px 40px, 40px 40px, auto;
 }

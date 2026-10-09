@@ -1,23 +1,21 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { IonApp } from '@ionic/react';
 import { afterEach, vi } from 'vitest';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import PracticeTopics from './PracticeTopics';
-import PracticeTopScore from './PracticeTopScore';
-import VsBot from './VsBot';
-import { appRoutes } from '../routing/routes';
+import { Route, Routes } from 'react-router-dom';
+import TestIonRouter from '../../test/TestIonRouter';
+import Practice from './Practice';
+import PracticeTopScore from './top-score/PracticeTopScore';
+import PracticeTopics from './topics/PracticeTopics';
+import { appRoutes } from '../../routing/routes';
 
 const renderFlow = () =>
   render(
-    <IonApp>
-      <MemoryRouter initialEntries={[appRoutes.practice]}>
-        <Routes>
-          <Route path={appRoutes.practice} element={<VsBot />} />
-          <Route path={appRoutes.practiceTopScore} element={<PracticeTopScore />} />
-          <Route path={appRoutes.practiceTopics} element={<PracticeTopics />} />
-        </Routes>
-      </MemoryRouter>
-    </IonApp>,
+    <TestIonRouter initialEntry={appRoutes.practice}>
+      <Routes>
+        <Route path={appRoutes.practice} element={<Practice />} />
+        <Route path={appRoutes.practiceTopScore} element={<PracticeTopScore />} />
+        <Route path={appRoutes.practiceTopics} element={<PracticeTopics />} />
+      </Routes>
+    </TestIonRouter>,
   );
 
 afterEach(() => {

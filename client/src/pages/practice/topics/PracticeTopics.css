@@ -1,6 +1,10 @@
+.practice-topics-page {
+  --game-page-focus-x: 46%;
+}
+
 .topic-catalogue {
   margin-top: clamp(46px, 8vh, 78px);
-  animation: catalogue-rise-in 520ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+  animation: catalogue-rise-in var(--game-motion-enter) both;
 }
 
 .topic-catalogue__heading {
@@ -12,7 +16,7 @@
 
 .topic-catalogue__heading p {
   margin: 0 0 6px;
-  color: #f2c94c;
+  color: var(--game-color-accent);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -21,7 +25,7 @@
 
 .topic-catalogue__heading h2 {
   margin: 0;
-  color: #f8f2dc;
+  color: var(--game-color-heading);
   font-size: clamp(2rem, 8vw, 3.3rem);
   font-weight: 880;
   line-height: 1;
@@ -31,7 +35,7 @@
 .topic-catalogue__heading > span {
   flex: 0 0 auto;
   padding-bottom: 4px;
-  color: #f2c94c;
+  color: var(--game-color-accent);
   font-size: 0.65rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -41,7 +45,7 @@
 .topic-catalogue__intro {
   max-width: 520px;
   margin: 14px 0 24px;
-  color: #9aacca;
+  color: var(--game-color-muted);
   font-size: 0.84rem;
   line-height: 1.55;
 }
@@ -54,7 +58,7 @@
 .topic-catalogue__selection {
   min-height: 20px;
   margin: 16px 2px 0;
-  color: #8fa2c5;
+  color: var(--game-color-subtle);
   font-size: 0.7rem;
   font-weight: 650;
   line-height: 1.4;

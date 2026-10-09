@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { IonButton, IonIcon, useIonViewWillEnter } from '@ionic/react';
-import { useNavigate } from 'react-router-dom';
+import { IonButton, IonIcon } from '@ionic/react';
 import {
   bookOutline,
   chevronForwardOutline,
@@ -10,9 +9,10 @@ import {
   volumeHighOutline,
   volumeMuteOutline,
 } from 'ionicons/icons';
-import GamePage from '../components/game/GamePage';
-import { playUiFeedback } from '../lib/uiFeedback';
-import { appRoutes } from '../routing/routes';
+import GamePage from '../../components/game/GamePage';
+import { usePressNavigation } from '../../hooks/usePressNavigation';
+import { playUiFeedback } from '../../lib/uiFeedback';
+import { appRoutes, type AppRoute } from '../../routing/routes';
 import './Home.css';
 
 const menuItems = [
@@ -49,28 +49,9 @@ const menuItems = [
 const romanNumerals = ['I', 'II', 'III', 'IV'] as const;
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
   const themeAudioRef = useRef<HTMLAudioElement>(null);
-  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const navigationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
-  const [isLeaving, setIsLeaving] = useState(false);
-
-  useIonViewWillEnter(() => {
-    if (exitTimerRef.current) {
-      clearTimeout(exitTimerRef.current);
-      exitTimerRef.current = null;
-    }
-
-    if (navigationTimerRef.current) {
-      clearTimeout(navigationTimerRef.current);
-      navigationTimerRef.current = null;
-    }
-
-    setSelectedRoute(null);
-    setIsLeaving(false);
-  });
+  const { navigateAfterPress, pendingRoute: selectedRoute } = usePressNavigation({ delay: 320 });
 
   useEffect(() => {
     const audio = themeAudioRef.current;
@@ -84,14 +65,6 @@ const Home: React.FC = () => {
     }
 
     return () => {
-      if (exitTimerRef.current) {
-        clearTimeout(exitTimerRef.current);
-      }
-
-      if (navigationTimerRef.current) {
-        clearTimeout(navigationTimerRef.current);
-      }
-
       if (audio && !audio.paused) {
         audio.pause();
       }
@@ -119,23 +92,12 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleMenuSelect = (route: string) => {
-    if (selectedRoute) return;
-
-    setSelectedRoute(route);
-    playUiFeedback('medium');
-
-    exitTimerRef.current = setTimeout(() => {
-      setIsLeaving(true);
-
-      navigationTimerRef.current = setTimeout(() => {
-        navigate(route);
-      }, 380);
-    }, 460);
+  const handleMenuSelect = (route: AppRoute) => {
+    navigateAfterPress(route);
   };
 
   return (
-    <GamePage className={`menu-page${isLeaving ? ' menu-page--leaving' : ''}`}>
+    <GamePage className="menu-page">
         <audio
           ref={themeAudioRef}
           src="/media/music/forensic-theories.wav"
@@ -200,8 +162,6 @@ const Home: React.FC = () => {
             ))}
           </nav>
         </main>
-
-        <div className="page-transition-veil" aria-hidden="true" />
     </GamePage>
   );
 };
