@@ -1,6 +1,8 @@
 export const appRoutes = {
   root: '/',
   home: '/home',
+  login: '/login',
+  register: '/register',
   story: '/story',
   practice: '/practice',
   practiceTopScore: '/practice/top-score',

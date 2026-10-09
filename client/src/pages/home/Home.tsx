@@ -5,6 +5,7 @@ import {
   chevronForwardOutline,
   gameControllerOutline,
   peopleOutline,
+  personOutline,
   settingsOutline,
   volumeHighOutline,
   volumeMuteOutline,
@@ -21,28 +22,24 @@ const menuItems = [
     description: 'Uncover the lost archives',
     icon: bookOutline,
     route: appRoutes.story,
-    featured: true,
   },
   {
     label: 'VS Bot',
     description: 'Train against the machine',
     icon: gameControllerOutline,
     route: appRoutes.practice,
-    featured: false,
   },
   {
     label: 'Multiplayer',
     description: 'Enter the online arena',
     icon: peopleOutline,
     route: appRoutes.multiplayer,
-    featured: false,
   },
   {
     label: 'Settings',
     description: 'Tune your experience',
     icon: settingsOutline,
     route: appRoutes.settings,
-    featured: false,
   },
 ] as const;
 
@@ -109,6 +106,14 @@ const Home: React.FC = () => {
         <main className="menu-shell">
           <header className="menu-header">
             <IonButton
+              className="account-control"
+              fill="clear"
+              onClick={() => navigateAfterPress(appRoutes.login, 'light')}
+              aria-label="Open account login"
+            >
+              <IonIcon icon={personOutline} />
+            </IonButton>
+            <IonButton
               className="sound-control"
               fill="clear"
               onClick={toggleThemeMusic}
@@ -132,7 +137,7 @@ const Home: React.FC = () => {
             {menuItems.map((item, index) => (
               <IonButton
                 key={item.route}
-                className={`menu-button${item.featured ? ' menu-button--featured' : ''}${
+                className={`menu-button${
                   selectedRoute === item.route ? ' menu-button--selected' : ''
                 }${selectedRoute && selectedRoute !== item.route ? ' menu-button--receding' : ''}`}
                 expand="block"

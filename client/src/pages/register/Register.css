@@ -1,0 +1,9 @@
+.register-page {
+  --auth-focus-x: 72%;
+  --auth-panel-width: 470px;
+}
+
+.register-page .auth-layout {
+  padding-top: clamp(26px, 5vh, 52px);
+  padding-bottom: 12px;
+}
