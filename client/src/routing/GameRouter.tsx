@@ -1,6 +1,8 @@
 import { Navigate, Route } from 'react-router-dom';
 import { IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import Login from '../pages/login/Login';
+import Register from '../pages/register/Register';
 import Home from '../pages/home/Home';
 import Multiplayer from '../pages/multiplayer/Multiplayer';
 import FriendlyMatch from '../pages/multiplayer/friendly/FriendlyMatch';
@@ -16,6 +18,8 @@ const GameRouter: React.FC = () => (
   <IonReactRouter>
     <IonRouterOutlet animated>
       <Route path={appRoutes.home} element={<Home />} />
+      <Route path={appRoutes.login} element={<Login />} />
+      <Route path={appRoutes.register} element={<Register />} />
       <Route path={appRoutes.story} element={<Story />} />
       <Route path={appRoutes.practice} element={<Practice />} />
       <Route path={appRoutes.practiceTopScore} element={<PracticeTopScore />} />
