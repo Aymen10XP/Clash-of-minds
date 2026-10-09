@@ -191,7 +191,7 @@ Ensure the following are installed:
 - **Node.js** (LTS) & **npm** — [nodejs.org](https://nodejs.org)
 - **Ionic CLI** — `npm install -g @ionic/cli`
 - **Python** 3.10+
-- **PostgreSQL** 14+
+- **Docker Desktop** (used to run PostgreSQL locally)
 - **Redis** 6+
 - **Git**
 - **Android Studio** (for building/running the Android app)
@@ -230,6 +230,13 @@ source .venv/bin/activate        # macOS/Linux
 
 # Install dependencies when server/requirements.txt is present
 pip install -r server/requirements.txt
+
+# Create the ignored local environment file
+cp server/.env.example server/.env
+# Windows PowerShell: Copy-Item server/.env.example server/.env
+
+# Start PostgreSQL 17 on localhost:5433
+npm run db:up
 
 # Apply migrations
 python manage.py migrate
@@ -297,7 +304,13 @@ DJANGO_SECRET_KEY=change-me
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-DATABASE_URL=postgres://user:password@localhost:5432/mindclash
+POSTGRES_DB=clash_of_minds
+POSTGRES_USER=clash_of_minds
+POSTGRES_PASSWORD=replace-with-a-local-password
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5433
+POSTGRES_CONN_MAX_AGE=60
+
 REDIS_URL=redis://localhost:6379/0
 
 ACCESS_TOKEN_LIFETIME_MINUTES=15
