@@ -26,9 +26,6 @@ const Practice: React.FC = () => (
   <ModeSelectionPage
     eyebrow="Solo training"
     title="VS Bot"
-    kicker="Choose your trial"
-    heading="How will you challenge the archive?"
-    description="Climb until your first mistake, or master one field at a time."
     backRoute={appRoutes.home}
     choices={practiceChoices}
     className="practice-page"

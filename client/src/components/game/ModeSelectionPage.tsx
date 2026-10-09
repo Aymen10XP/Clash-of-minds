@@ -16,9 +16,6 @@ export interface ModeSelectionChoice {
 interface ModeSelectionPageProps {
   eyebrow: string;
   title: string;
-  kicker: string;
-  heading: string;
-  description: string;
   backRoute: AppRoute;
   choices: readonly ModeSelectionChoice[];
   className?: string;
@@ -27,9 +24,6 @@ interface ModeSelectionPageProps {
 const ModeSelectionPage: React.FC<ModeSelectionPageProps> = ({
   eyebrow,
   title,
-  kicker,
-  heading,
-  description,
   backRoute,
   choices,
   className = '',
@@ -45,11 +39,6 @@ const ModeSelectionPage: React.FC<ModeSelectionPageProps> = ({
       className={`mode-selection-page ${className}`.trim()}
     >
       <div className="mode-selection-content">
-        <section className="mode-selection-intro" aria-labelledby={titleId}>
-          <p className="mode-selection-intro__kicker">{kicker}</p>
-          <h2 id={titleId}>{heading}</h2>
-          <p>{description}</p>
-        </section>
 
         <section className="mode-selection-grid" aria-label={`${title} modes`}>
           {choices.map((choice) => (
