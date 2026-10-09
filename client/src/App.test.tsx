@@ -15,7 +15,7 @@ afterEach(() => {
 test('renders the main game menu', async () => {
   render(<App />);
 
-  expect(await screen.findByRole('heading', { name: /clash of minds/i })).toBeDefined();
+  expect(await screen.findByRole('img', { name: /clash of minds/i })).toBeDefined();
   expect(screen.getByText('Story Mode')).toBeDefined();
   expect(screen.getByText('VS Bot')).toBeDefined();
   expect(screen.getByText('Multiplayer')).toBeDefined();

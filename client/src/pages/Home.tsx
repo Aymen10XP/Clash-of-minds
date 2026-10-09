@@ -4,7 +4,7 @@ import {
   IonContent,
   IonIcon,
   IonPage,
-  IonText,
+  useIonViewWillEnter,
 } from '@ionic/react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useNavigate } from 'react-router-dom';
@@ -89,9 +89,26 @@ const playSelectionSound = () => {
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const themeAudioRef = useRef<HTMLAudioElement>(null);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  useIonViewWillEnter(() => {
+    if (exitTimerRef.current) {
+      clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
+
+    if (navigationTimerRef.current) {
+      clearTimeout(navigationTimerRef.current);
+      navigationTimerRef.current = null;
+    }
+
+    setSelectedRoute(null);
+    setIsLeaving(false);
+  });
 
   useEffect(() => {
     const audio = themeAudioRef.current;
@@ -105,6 +122,10 @@ const Home: React.FC = () => {
     }
 
     return () => {
+      if (exitTimerRef.current) {
+        clearTimeout(exitTimerRef.current);
+      }
+
       if (navigationTimerRef.current) {
         clearTimeout(navigationTimerRef.current);
       }
@@ -144,14 +165,18 @@ const Home: React.FC = () => {
     playSelectionSound();
     void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => undefined);
 
-    navigationTimerRef.current = setTimeout(() => {
-      navigate(route);
-    }, 620);
+    exitTimerRef.current = setTimeout(() => {
+      setIsLeaving(true);
+
+      navigationTimerRef.current = setTimeout(() => {
+        navigate(route);
+      }, 380);
+    }, 460);
   };
 
   return (
     <IonPage>
-      <IonContent fullscreen className="menu-page">
+      <IonContent fullscreen className={`menu-page${isLeaving ? ' menu-page--leaving' : ''}`}>
         <div className="ambient-field" aria-hidden="true">
           {particles.map((particle) => (
             <span key={particle.className} className={particle.className} />
@@ -172,10 +197,6 @@ const Home: React.FC = () => {
 
         <main className="menu-shell">
           <header className="menu-header">
-            <div className="archive-status">
-              <span className="archive-status__line" aria-hidden="true" />
-              Archive link established
-            </div>
             <IonButton
               className="sound-control"
               fill="clear"
@@ -186,19 +207,13 @@ const Home: React.FC = () => {
             </IonButton>
           </header>
 
-          <section className="brand-block" aria-labelledby="game-title">
-            <div className="brand-seal" aria-hidden="true">
-              <span className="brand-seal__century">XXI</span>
-              <span className="brand-seal__monogram">CM</span>
-            </div>
-
-            <div className="brand-copy">
-              <IonText color="light">
-                <p className="brand-kicker">Past meets protocol</p>
-                <h1 id="game-title">
-                  Clash of <strong>Minds</strong>
-                </h1>
-              </IonText>
+          <section className="brand-block">
+            <div className="logo-gloss">
+              <img
+                className="game-logo"
+                src="/media/images/logo/clash-of-minds-logo.png"
+                alt="Clash of Minds"
+              />
             </div>
           </section>
 
@@ -235,13 +250,9 @@ const Home: React.FC = () => {
               </IonButton>
             ))}
           </nav>
-
-          <p className="menu-footer">
-            <span aria-hidden="true" />
-            Select a chronicle
-            <span aria-hidden="true" />
-          </p>
         </main>
+
+        <div className="page-transition-veil" aria-hidden="true" />
       </IonContent>
     </IonPage>
   );
