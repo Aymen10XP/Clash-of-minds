@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  IonButton,
-  IonContent,
-  IonIcon,
-  IonPage,
-  useIonViewWillEnter,
-} from '@ionic/react';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { IonButton, IonIcon, useIonViewWillEnter } from '@ionic/react';
 import { useNavigate } from 'react-router-dom';
 import {
   bookOutline,
@@ -17,6 +10,9 @@ import {
   volumeHighOutline,
   volumeMuteOutline,
 } from 'ionicons/icons';
+import GamePage from '../components/game/GamePage';
+import { playUiFeedback } from '../lib/uiFeedback';
+import { appRoutes } from '../routing/routes';
 import './Home.css';
 
 const menuItems = [
@@ -24,67 +20,33 @@ const menuItems = [
     label: 'Story Mode',
     description: 'Uncover the lost archives',
     icon: bookOutline,
-    route: '/story',
+    route: appRoutes.story,
     featured: true,
   },
   {
     label: 'VS Bot',
     description: 'Train against the machine',
     icon: gameControllerOutline,
-    route: '/practice',
+    route: appRoutes.practice,
     featured: false,
   },
   {
     label: 'Multiplayer',
     description: 'Enter the online arena',
     icon: peopleOutline,
-    route: '/multiplayer',
+    route: appRoutes.multiplayer,
     featured: false,
   },
   {
     label: 'Settings',
     description: 'Tune your experience',
     icon: settingsOutline,
-    route: '/settings',
+    route: appRoutes.settings,
     featured: false,
   },
 ] as const;
 
-const particles = [
-  { className: 'particle particle--one' },
-  { className: 'particle particle--two' },
-  { className: 'particle particle--three' },
-  { className: 'particle particle--four' },
-  { className: 'particle particle--five' },
-] as const;
-
 const romanNumerals = ['I', 'II', 'III', 'IV'] as const;
-
-const playSelectionSound = () => {
-  const LegacyAudioContext = (
-    window as typeof window & { webkitAudioContext?: typeof AudioContext }
-  ).webkitAudioContext;
-  const AudioContextConstructor = window.AudioContext ?? LegacyAudioContext;
-
-  if (!AudioContextConstructor) return;
-
-  const context = new AudioContextConstructor();
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
-  const now = context.currentTime;
-
-  oscillator.type = 'sine';
-  oscillator.frequency.setValueAtTime(390, now);
-  oscillator.frequency.exponentialRampToValueAtTime(760, now + 0.1);
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.13, now + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-  oscillator.connect(gain);
-  gain.connect(context.destination);
-  oscillator.start(now);
-  oscillator.stop(now + 0.17);
-  oscillator.addEventListener('ended', () => void context.close(), { once: true });
-};
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -140,8 +102,7 @@ const Home: React.FC = () => {
     const audio = themeAudioRef.current;
     if (!audio) return;
 
-    playSelectionSound();
-    void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+    playUiFeedback('light');
 
     if (audio.paused) {
       audio.volume = 0.32;
@@ -162,8 +123,7 @@ const Home: React.FC = () => {
     if (selectedRoute) return;
 
     setSelectedRoute(route);
-    playSelectionSound();
-    void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => undefined);
+    playUiFeedback('medium');
 
     exitTimerRef.current = setTimeout(() => {
       setIsLeaving(true);
@@ -175,18 +135,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <IonPage>
-      <IonContent fullscreen className={`menu-page${isLeaving ? ' menu-page--leaving' : ''}`}>
-        <div className="ambient-field" aria-hidden="true">
-          {particles.map((particle) => (
-            <span key={particle.className} className={particle.className} />
-          ))}
-          <span className="archive-ring archive-ring--outer" />
-          <span className="archive-ring archive-ring--inner" />
-          <span className="civilization-frieze civilization-frieze--top" />
-          <span className="civilization-frieze civilization-frieze--bottom" />
-        </div>
-
+    <GamePage className={`menu-page${isLeaving ? ' menu-page--leaving' : ''}`}>
         <audio
           ref={themeAudioRef}
           src="/media/music/forensic-theories.wav"
@@ -253,8 +202,7 @@ const Home: React.FC = () => {
         </main>
 
         <div className="page-transition-veil" aria-hidden="true" />
-      </IonContent>
-    </IonPage>
+    </GamePage>
   );
 };
 

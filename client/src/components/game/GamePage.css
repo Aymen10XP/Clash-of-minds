@@ -1,0 +1,12 @@
+.game-page {
+  --background: #020814;
+  --color: #f4f7ff;
+}
+
+.game-page::part(background) {
+  background:
+    linear-gradient(rgba(76, 145, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(76, 145, 255, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 50% -10%, #153b79 0, #071a3a 31%, #020814 68%);
+  background-size: 40px 40px, 40px 40px, auto;
+}
