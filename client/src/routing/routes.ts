@@ -6,5 +6,7 @@ export const appRoutes = {
   practiceTopScore: '/practice/top-score',
   practiceTopics: '/practice/topics',
   multiplayer: '/multiplayer',
+  multiplayerRanked: '/multiplayer/ranked',
+  multiplayerFriendly: '/multiplayer/friendly',
   settings: '/settings',
 } as const;

@@ -1,55 +1,34 @@
 import { libraryOutline, trophyOutline } from 'ionicons/icons';
-import GameChoiceCard from '../components/game/GameChoiceCard';
-import GameSubpage from '../components/game/GameSubpage';
-import { usePressNavigation } from '../hooks/usePressNavigation';
+import ModeSelectionPage, { type ModeSelectionChoice } from '../components/game/ModeSelectionPage';
 import { appRoutes } from '../routing/routes';
-import './VsBot.css';
 
-const VsBot: React.FC = () => {
-  const { navigateAfterPress, pendingRoute } = usePressNavigation();
+const practiceChoices: readonly ModeSelectionChoice[] = [
+  {
+    route: appRoutes.practiceTopScore,
+    title: 'Top Score',
+    description: 'Answer without limits. One wrong answer ends the run.',
+    meta: 'Endless ladder',
+    icon: trophyOutline,
+  },
+  {
+    route: appRoutes.practiceTopics,
+    title: 'Choose by Topic',
+    description: 'Open the catalogue and train inside a chosen field.',
+    meta: 'Focused practice',
+    icon: libraryOutline,
+  },
+];
 
-  const handleBack = () => {
-    navigateAfterPress(appRoutes.home, 'light');
-  };
-
-  return (
-    <GameSubpage
-      eyebrow="Solo training"
-      title="VS Bot"
-      onBack={handleBack}
-      className={`practice-page${pendingRoute ? ' practice-page--leaving' : ''}`}
-    >
-      <div className="practice-content">
-        <section className="practice-intro" aria-labelledby="practice-title">
-          <p className="practice-intro__kicker">Choose your trial</p>
-          <h2 id="practice-title">How will you challenge the archive?</h2>
-          <p>Climb until your first mistake, or master one field at a time.</p>
-        </section>
-
-        <section className="practice-modes" aria-label="Practice modes">
-          <GameChoiceCard
-            title="Top Score"
-            description="Answer without limits. One wrong answer ends the run."
-            meta="Endless ladder"
-            icon={trophyOutline}
-            selected={pendingRoute === appRoutes.practiceTopScore}
-            disabled={Boolean(pendingRoute && pendingRoute !== appRoutes.practiceTopScore)}
-            onSelect={() => navigateAfterPress(appRoutes.practiceTopScore)}
-          />
-
-          <GameChoiceCard
-            title="Choose by Topic"
-            description="Open the catalogue and train inside a chosen field."
-            meta="Focused practice"
-            icon={libraryOutline}
-            selected={pendingRoute === appRoutes.practiceTopics}
-            disabled={Boolean(pendingRoute && pendingRoute !== appRoutes.practiceTopics)}
-            onSelect={() => navigateAfterPress(appRoutes.practiceTopics)}
-          />
-        </section>
-      </div>
-    </GameSubpage>
-  );
-};
+const VsBot: React.FC = () => (
+  <ModeSelectionPage
+    eyebrow="Solo training"
+    title="VS Bot"
+    kicker="Choose your trial"
+    heading="How will you challenge the archive?"
+    description="Climb until your first mistake, or master one field at a time."
+    backRoute={appRoutes.home}
+    choices={practiceChoices}
+  />
+);
 
 export default VsBot;
