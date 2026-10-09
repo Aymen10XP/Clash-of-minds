@@ -1,0 +1,167 @@
+.game-choice-card {
+  position: relative;
+  width: 100%;
+  min-height: 112px;
+  padding: 18px;
+  border: 3px double rgba(180, 146, 61, 0.48);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+  color: #f4f7ff;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 13px, rgba(242, 201, 76, 0.025) 13px 14px),
+    linear-gradient(105deg, rgba(17, 36, 70, 0.98), rgba(6, 20, 47, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(21, 64, 130, 0.65),
+    inset 0 0 28px rgba(0, 3, 13, 0.34),
+    0 13px 36px rgba(0, 3, 13, 0.24);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.game-choice-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(242, 201, 76, 0.15), transparent 72%);
+  transform: translateX(-70%);
+  transition: opacity 180ms ease, transform 420ms ease;
+  pointer-events: none;
+}
+
+.game-choice-card:hover {
+  border-color: rgba(242, 201, 76, 0.72);
+}
+
+.game-choice-card:active {
+  transform: scale(0.982);
+  filter: brightness(1.12);
+}
+
+.game-choice-card:focus-visible {
+  outline: 2px solid #f2c94c;
+  outline-offset: 3px;
+}
+
+.game-choice-card--selected {
+  border-color: rgba(255, 222, 116, 0.96);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 13px, rgba(242, 201, 76, 0.04) 13px 14px),
+    linear-gradient(105deg, rgba(45, 61, 84, 0.99), rgba(17, 40, 77, 0.99));
+  box-shadow:
+    inset 0 0 0 1px rgba(242, 201, 76, 0.2),
+    inset 0 0 32px rgba(242, 201, 76, 0.06),
+    0 0 28px rgba(242, 201, 76, 0.12);
+}
+
+.game-choice-card--selected::before {
+  opacity: 1;
+  transform: translateX(70%);
+}
+
+.game-choice-card__icon {
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(242, 201, 76, 0.4);
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  color: #f2c94c;
+  background: rgba(242, 201, 76, 0.07);
+  font-size: 1.45rem;
+}
+
+.game-choice-card__content {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-choice-card__meta {
+  margin-bottom: 4px;
+  color: #7188b1;
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.game-choice-card__title {
+  color: #fff8dd;
+  font-size: 1.05rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.game-choice-card__description {
+  margin-top: 5px;
+  color: #9aacca;
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.game-choice-card__status {
+  position: relative;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(96, 118, 158, 0.55);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #06132c;
+  font-size: 0.82rem;
+}
+
+.game-choice-card__status > span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #60769e;
+}
+
+.game-choice-card--selected .game-choice-card__status {
+  border-color: #f2c94c;
+  background: #f2c94c;
+  box-shadow: 0 0 14px rgba(242, 201, 76, 0.3);
+}
+
+.game-choice-card--compact {
+  min-height: 94px;
+  padding: 14px;
+  grid-template-columns: 40px minmax(0, 1fr) 22px;
+  gap: 11px;
+}
+
+.game-choice-card--compact .game-choice-card__icon {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+}
+
+.game-choice-card--compact .game-choice-card__title {
+  font-size: 0.9rem;
+}
+
+.game-choice-card--compact .game-choice-card__description {
+  font-size: 0.68rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-choice-card,
+  .game-choice-card::before {
+    transition: none;
+  }
+}

@@ -2,6 +2,10 @@ import { Navigate, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
+import PracticeTopics from './pages/PracticeTopics';
+import PracticeTopScore from './pages/PracticeTopScore';
+import VsBot from './pages/VsBot';
+import { appRoutes } from './routing/routes';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -39,8 +43,11 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path={appRoutes.home} element={<Home />} />
+        <Route path={appRoutes.practice} element={<VsBot />} />
+        <Route path={appRoutes.practiceTopScore} element={<PracticeTopScore />} />
+        <Route path={appRoutes.practiceTopics} element={<PracticeTopics />} />
+        <Route path={appRoutes.root} element={<Navigate to={appRoutes.home} replace />} />
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>

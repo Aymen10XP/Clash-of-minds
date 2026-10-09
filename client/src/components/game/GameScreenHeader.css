@@ -1,0 +1,48 @@
+.game-screen-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-screen-header__back {
+  --background: rgba(11, 31, 67, 0.78);
+  --background-hover: rgba(19, 51, 104, 0.9);
+  --background-activated: rgba(30, 70, 135, 0.95);
+  --border-color: rgba(108, 161, 255, 0.28);
+  --border-radius: 6px;
+  --border-style: solid;
+  --border-width: 1px;
+  --color: #f2c94c;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+}
+
+.game-screen-header__copy {
+  min-width: 0;
+  text-align: center;
+}
+
+.game-screen-header__copy p {
+  margin: 0 0 3px;
+  color: #8fa2c5;
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.game-screen-header__copy h1 {
+  margin: 0;
+  color: #f8f2dc;
+  font-size: 1.12rem;
+  font-weight: 850;
+  letter-spacing: 0.015em;
+}
+
+.game-screen-header__balance {
+  width: 44px;
+}
