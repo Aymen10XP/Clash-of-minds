@@ -1,0 +1,38 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "www/**"]
+    },
+    "check": {
+      "outputs": []
+    },
+    "lint": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": ["coverage/**"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "outputs": ["cypress/screenshots/**", "cypress/videos/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "@mind-clash/server#build": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/manage.py", "$TURBO_ROOT$/scripts/run-django.mjs"],
+      "outputs": []
+    },
+    "@mind-clash/server#check": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/manage.py", "$TURBO_ROOT$/scripts/run-django.mjs"],
+      "outputs": []
+    },
+    "@mind-clash/server#test": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/manage.py", "$TURBO_ROOT$/scripts/run-django.mjs"],
+      "outputs": []
+    }
+  }
+}

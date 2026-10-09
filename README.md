@@ -13,6 +13,7 @@ A real-time two-player trivia game for Android. Two players race to answer the s
 - [Overview](#overview)
 - [Game Rules at a Glance](#game-rules-at-a-glance)
 - [Tech Stack](#tech-stack)
+- [Monorepo Tooling](#monorepo-tooling)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -112,6 +113,36 @@ Normalization may trim whitespace, case-fold, normalize Unicode, and match an ap
 
 ---
 
+## Monorepo Tooling
+
+The Ionic client and Django server are managed as one npm workspace with
+[Turborepo](https://turborepo.com/). Run shared commands from the repository
+root; Turbo dispatches each command to the workspaces that implement it and
+caches non-development tasks.
+
+| Root command | Purpose |
+|---|---|
+| `npm run dev` | Start the Ionic/Vite client and Django development server together |
+| `npm run build` | Build the client and run Django's system check |
+| `npm run check` | Run Django's system check |
+| `npm run lint` | Lint every workspace that provides a `lint` script |
+| `npm test` | Run client and server tests |
+| `npm run test:e2e` | Build the client, then run its Cypress suite |
+
+The root `package-lock.json` is the only npm lockfile. Add JavaScript packages
+to a workspace from the root, for example:
+
+```bash
+npm install axios --workspace @mind-clash/client
+npm install -D some-tool --workspace @mind-clash/server
+```
+
+Turbo configuration lives in `turbo.json`. The small `server/package.json`
+does not replace Python packaging; it only exposes Django commands to Turbo.
+Those commands automatically use `.venv` when it exists.
+
+---
+
 ## Project Structure
 
 ```
@@ -172,29 +203,33 @@ git clone <your-repo-url> mind-clash
 cd mind-clash
 ```
 
+Install the root workspace dependencies (including Turborepo and the Ionic
+client dependencies):
+
+```bash
+npm install
+```
+
 ### Frontend Setup (Ionic + React)
 
 ```bash
-cd client
-npm install
-npx cap add android   # only needed once
+npm run build --workspace @mind-clash/client
 ```
+
+The Android project already exists under `client/android`; run
+`npm exec --workspace @mind-clash/client -- cap sync android` after web builds
+when native dependencies or configuration change.
 
 ### Backend Setup (Django)
 
 ```bash
-cd server
-
 # Create and activate a virtual environment
-python -m venv ../venv
-source ../venv/bin/activate      # macOS/Linux
-# ..\venv\Scripts\activate       # Windows
+python -m venv .venv
+source .venv/bin/activate        # macOS/Linux
+# .venv\Scripts\Activate.ps1     # Windows PowerShell
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Copy environment template and configure
-cp .env.example .env
+# Install dependencies when server/requirements.txt is present
+pip install -r server/requirements.txt
 
 # Apply migrations
 python manage.py migrate
@@ -210,9 +245,8 @@ python manage.py createsuperuser
 ### Start the Django API
 
 ```bash
-cd server
-source ../venv/bin/activate
-python manage.py runserver
+source .venv/bin/activate
+npm run dev --workspace @mind-clash/server
 ```
 
 API available at `http://localhost:8000/`.
@@ -220,19 +254,24 @@ API available at `http://localhost:8000/`.
 ### Start the Ionic App
 
 ```bash
-cd client
-ionic serve
+npm run dev --workspace @mind-clash/client
 ```
 
-Web preview available at `http://localhost:8100/`.
+Web preview available at `http://localhost:5173/`.
+
+To start both development servers in one terminal, activate the Python virtual
+environment and run:
+
+```bash
+npm run dev
+```
 
 ### Run on Android Device/Emulator
 
 ```bash
-cd client
-ionic build
-npx cap sync android
-npx cap open android
+npm run build --workspace @mind-clash/client
+npm exec --workspace @mind-clash/client -- cap sync android
+npm exec --workspace @mind-clash/client -- cap open android
 ```
 
 Then run from Android Studio.
@@ -304,17 +343,16 @@ VITE_WS_BASE_URL=ws://localhost:8000/ws/v1
 ### Frontend (Ionic + React)
 
 ```bash
-cd client
-npm test              # unit + component tests
-npm run test:e2e      # end-to-end tests
+npm test                                      # all workspace tests
+npm run test --workspace @mind-clash/client   # client unit/component tests
+npm run test:e2e                              # client end-to-end tests
 ```
 
 ### Backend (Django)
 
 ```bash
-cd server
-source ../venv/bin/activate
-pytest                # unit, integration, WebSocket tests
+source .venv/bin/activate
+npm run test --workspace @mind-clash/server
 ```
 
 ### Test Strategy Overview

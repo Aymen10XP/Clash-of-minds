@@ -1,0 +1,11 @@
+{
+  "name": "@mind-clash/server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node ../scripts/run-django.mjs runserver",
+    "build": "node ../scripts/run-django.mjs check",
+    "check": "node ../scripts/run-django.mjs check",
+    "test": "node ../scripts/run-django.mjs test"
+  }
+}

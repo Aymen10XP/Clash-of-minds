@@ -1,2 +1,9 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+:root {
+  --ion-font-family: "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+  --ion-color-primary: #f2c94c;
+  --ion-color-primary-rgb: 242, 201, 76;
+  --ion-color-primary-contrast: #06132c;
+  --ion-color-primary-contrast-rgb: 6, 19, 44;
+  --ion-color-primary-shade: #d5b143;
+  --ion-color-primary-tint: #f3ce5e;
+}
