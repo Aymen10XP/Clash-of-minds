@@ -1,0 +1,18 @@
+.session-loading {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: var(--game-color-heading-warm);
+  font-size: 0.82rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.session-loading ion-spinner {
+  color: var(--game-color-accent);
+}

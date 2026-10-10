@@ -23,6 +23,8 @@ type AuthPageProps = PropsWithChildren<{
   alternateLabel: string;
   alternateRoute: AppRoute;
   backRoute: AppRoute;
+  notice?: string;
+  onSubmit: (formData: FormData) => Promise<void>;
 }>;
 
 const AuthPage: React.FC<AuthPageProps> = ({
@@ -34,17 +36,29 @@ const AuthPage: React.FC<AuthPageProps> = ({
   alternateLabel,
   alternateRoute,
   backRoute,
+  notice,
+  onSubmit,
 }) => {
-  const [previewNotice, setPreviewNotice] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { goBackAfterPress, navigateAfterPress, pendingRoute } = usePressNavigation({
     delay: 160,
     feedback: 'light',
   });
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     playUiFeedback('medium');
-    setPreviewNotice('The screen is ready. Account connection comes in the next backend step.');
+    setSubmitError('');
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit(new FormData(event.currentTarget));
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Authentication request failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -96,14 +110,23 @@ const AuthPage: React.FC<AuthPageProps> = ({
                     ))}
                   </IonGrid>
 
-                  <IonButton className="auth-submit" expand="block" type="submit">
-                    {submitLabel}
+                  <IonButton
+                    className="auth-submit"
+                    expand="block"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Please wait' : submitLabel}
                   </IonButton>
 
-                  {previewNotice && (
-                    <p className="auth-preview-notice" role="status">
-                      {previewNotice}
+                  {submitError && (
+                    <p className="auth-form-notice auth-form-notice--error" role="alert">
+                      {submitError}
                     </p>
+                  )}
+
+                  {!submitError && notice && (
+                    <p className="auth-form-notice" role="status">{notice}</p>
                   )}
 
                   <IonRow className="auth-alternate ion-align-items-center ion-justify-content-center">

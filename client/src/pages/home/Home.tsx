@@ -4,13 +4,14 @@ import {
   bookOutline,
   chevronForwardOutline,
   gameControllerOutline,
+  logOutOutline,
   peopleOutline,
-  personOutline,
   settingsOutline,
   volumeHighOutline,
   volumeMuteOutline,
 } from 'ionicons/icons';
 import GamePage from '../../components/game/GamePage';
+import { useAuth } from '../../features/auth/context';
 import { usePressNavigation } from '../../hooks/usePressNavigation';
 import { playUiFeedback } from '../../lib/uiFeedback';
 import { appRoutes, type AppRoute } from '../../routing/routes';
@@ -48,6 +49,8 @@ const romanNumerals = ['I', 'II', 'III', 'IV'] as const;
 const Home: React.FC = () => {
   const themeAudioRef = useRef<HTMLAudioElement>(null);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { logout, user } = useAuth();
   const { navigateAfterPress, pendingRoute: selectedRoute } = usePressNavigation({ delay: 320 });
 
   useEffect(() => {
@@ -93,6 +96,17 @@ const Home: React.FC = () => {
     navigateAfterPress(route);
   };
 
+  const handleLogout = async () => {
+    playUiFeedback('light');
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <GamePage className="menu-page">
       <audio
@@ -113,10 +127,11 @@ const Home: React.FC = () => {
             <IonButton
               className="account-control"
               fill="clear"
-              onClick={() => navigateAfterPress(appRoutes.login, 'light')}
-              aria-label="Open account login"
+              disabled={isLoggingOut}
+              onClick={() => void handleLogout()}
+              aria-label={`Log out${user ? ` ${user.username}` : ''}`}
             >
-              <IonIcon icon={personOutline} />
+              <IonIcon icon={logOutOutline} />
             </IonButton>
           </IonCol>
           <IonCol className="ion-no-padding" size="auto">

@@ -194,7 +194,7 @@
   transform: scale(0.985);
 }
 
-.auth-preview-notice {
+.auth-form-notice {
   margin: -6px 0 0;
   padding: 10px 12px;
   border-left: 2px solid var(--game-color-accent);
@@ -202,6 +202,12 @@
   background: rgba(242, 201, 76, 0.07);
   font-size: 0.76rem;
   line-height: 1.45;
+}
+
+.auth-form-notice--error {
+  border-left-color: #ef8f8f;
+  color: #ffe1e1;
+  background: rgba(239, 143, 143, 0.09);
 }
 
 .auth-alternate {
