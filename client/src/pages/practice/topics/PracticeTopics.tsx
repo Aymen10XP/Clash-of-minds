@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IonBadge, IonCol, IonGrid, IonNote, IonRow } from '@ionic/react';
 import GameChoiceCard from '../../../components/game/GameChoiceCard';
 import GameSubpage from '../../../components/game/GameSubpage';
 import { practiceTopics } from '../../../features/practice/topics';
@@ -28,40 +29,35 @@ const PracticeTopics: React.FC = () => {
       onBack={handleBack}
       className="practice-topics-page"
     >
-      <section className="topic-catalogue" aria-labelledby="topic-title">
-        <div className="topic-catalogue__heading">
-          <div>
-            <p>Knowledge catalogue</p>
-            <h2 id="topic-title">Select a topic</h2>
-          </div>
-          <span>{practiceTopics.length} archives</span>
-        </div>
+      <IonGrid
+        fixed
+        className="topic-catalogue ion-no-padding"
+        role="region"
+        aria-labelledby="topic-title"
+      >
 
-        <p className="topic-catalogue__intro">
-          Focus your training on one archive. Your selected topic will define the next challenge.
-        </p>
-
-        <div className="topic-grid">
+        <IonRow className="topic-grid">
           {practiceTopics.map((topic) => (
-            <GameChoiceCard
+            <IonCol
+              className="topic-grid__column ion-display-flex"
               key={topic.id}
-              compact
-              title={topic.title}
-              description={topic.description}
-              meta={topic.era}
-              icon={topic.icon}
-              selected={selectedTopicId === topic.id}
-              onSelect={() => handleTopicSelect(topic.id)}
-            />
+              size="12"
+              sizeMd="6"
+              sizeLg="4"
+            >
+              <GameChoiceCard
+                compact
+                title={topic.title}
+                description={topic.description}
+                meta={topic.era}
+                icon={topic.icon}
+                selected={selectedTopicId === topic.id}
+                onSelect={() => handleTopicSelect(topic.id)}
+              />
+            </IonCol>
           ))}
-        </div>
-
-        <p className="topic-catalogue__selection" aria-live="polite">
-          {selectedTopic
-            ? `${selectedTopic.title} selected. Your training path is ready.`
-            : 'Choose one archive to prepare your training path.'}
-        </p>
-      </section>
+        </IonRow>
+      </IonGrid>
     </GameSubpage>
   );
 };

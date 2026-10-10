@@ -1,6 +1,7 @@
 .game-subpage {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   width: min(100%, 900px);
   min-height: 100%;
   margin: 0 auto;

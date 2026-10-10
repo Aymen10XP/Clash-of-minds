@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { IonButton, IonIcon } from '@ionic/react';
+import { IonButton, IonCol, IonGrid, IonIcon, IonRow } from '@ionic/react';
 import {
   bookOutline,
   chevronForwardOutline,
@@ -95,16 +95,21 @@ const Home: React.FC = () => {
 
   return (
     <GamePage className="menu-page">
-        <audio
-          ref={themeAudioRef}
-          src="/media/music/forensic-theories.wav"
-          preload="auto"
-          autoPlay
-          loop
-        />
+      <audio
+        ref={themeAudioRef}
+        src="/media/music/forensic-theories.wav"
+        preload="auto"
+        autoPlay
+        loop
+      />
 
-        <main className="menu-shell">
-          <header className="menu-header">
+      <IonGrid
+        fixed
+        className="menu-shell ion-display-flex ion-flex-column ion-justify-content-center"
+        role="main"
+      >
+        <IonRow className="menu-header ion-align-items-center ion-justify-content-end">
+          <IonCol className="ion-no-padding" size="auto">
             <IonButton
               className="account-control"
               fill="clear"
@@ -113,6 +118,8 @@ const Home: React.FC = () => {
             >
               <IonIcon icon={personOutline} />
             </IonButton>
+          </IonCol>
+          <IonCol className="ion-no-padding" size="auto">
             <IonButton
               className="sound-control"
               fill="clear"
@@ -121,9 +128,11 @@ const Home: React.FC = () => {
             >
               <IonIcon icon={isMusicPlaying ? volumeHighOutline : volumeMuteOutline} />
             </IonButton>
-          </header>
+          </IonCol>
+        </IonRow>
 
-          <section className="brand-block">
+        <IonRow className="brand-block ion-justify-content-center">
+          <IonCol className="ion-no-padding" size="auto">
             <div className="logo-gloss">
               <img
                 className="game-logo"
@@ -131,12 +140,18 @@ const Home: React.FC = () => {
                 alt="Clash of Minds"
               />
             </div>
-          </section>
+          </IonCol>
+        </IonRow>
 
-          <nav className="game-menu" aria-label="Game modes">
-            {menuItems.map((item, index) => (
+        <IonRow className="game-menu" role="navigation" aria-label="Game modes">
+          {menuItems.map((item, index) => (
+            <IonCol
+              className="game-menu__column ion-display-flex"
+              key={item.route}
+              size="12"
+              sizeMd="6"
+            >
               <IonButton
-                key={item.route}
                 className={`menu-button${
                   selectedRoute === item.route ? ' menu-button--selected' : ''
                 }${selectedRoute && selectedRoute !== item.route ? ' menu-button--receding' : ''}`}
@@ -164,9 +179,10 @@ const Home: React.FC = () => {
                   aria-hidden="true"
                 />
               </IonButton>
-            ))}
-          </nav>
-        </main>
+            </IonCol>
+          ))}
+        </IonRow>
+      </IonGrid>
     </GamePage>
   );
 };

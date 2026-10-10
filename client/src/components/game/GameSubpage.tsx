@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react';
+import { IonGrid } from '@ionic/react';
 import GamePage from './GamePage';
 import GameScreenHeader from './GameScreenHeader';
 import './GameSubpage.css';
@@ -20,10 +21,10 @@ const GameSubpage: React.FC<GameSubpageProps> = ({
   backLabel = 'Go back',
 }) => (
   <GamePage className={className}>
-    <main className="game-subpage">
+    <IonGrid fixed className="game-subpage" role="main">
       <GameScreenHeader eyebrow={eyebrow} title={title} onBack={onBack} backLabel={backLabel} />
       {children}
-    </main>
+    </IonGrid>
   </GamePage>
 );
 

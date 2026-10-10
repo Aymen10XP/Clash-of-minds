@@ -6,7 +6,7 @@ import {
   type FocusEvent,
   type KeyboardEvent,
 } from 'react';
-import { IonIcon, IonInput } from '@ionic/react';
+import { IonIcon, IonInput, IonItem, IonLabel, IonList, IonNote } from '@ionic/react';
 import { checkmarkOutline, flagOutline } from 'ionicons/icons';
 import { countries, type CountryOption } from '../../features/auth/countries';
 import { playUiFeedback } from '../../lib/uiFeedback';
@@ -121,31 +121,44 @@ const CountryCombobox: React.FC = () => {
       <input type="hidden" name="country" value={selectedCountry?.code ?? ''} />
 
       {isOpen && (
-        <div className="country-combobox__menu" id={listboxId} role="listbox" aria-label="Countries">
+        <IonList
+          className="country-combobox__menu"
+          id={listboxId}
+          role="listbox"
+          aria-label="Countries"
+          lines="none"
+        >
           {matchingCountries.length ? (
             matchingCountries.map((country, index) => (
-              <button
+              <IonItem
                 className={`country-combobox__option${index === activeIndex ? ' is-active' : ''}`}
                 id={`${listboxId}-option-${country.code}`}
                 key={country.code}
-                type="button"
-                role="option"
+                button
+                detail={false}
+                lines="none"
+                  role="option"
+                  aria-label={`${country.name} ${country.code}`}
                 aria-selected={selectedCountry?.code === country.code}
                 onPointerDown={(event) => event.preventDefault()}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => selectCountry(country)}
               >
-                <span>{country.name}</span>
-                <span className="country-combobox__code">{country.code}</span>
+                <IonLabel>{country.name}</IonLabel>
+                <IonNote className="country-combobox__code" slot="end">
+                  {country.code}
+                </IonNote>
                 {selectedCountry?.code === country.code && (
-                  <IonIcon icon={checkmarkOutline} aria-hidden="true" />
+                  <IonIcon icon={checkmarkOutline} slot="end" aria-hidden="true" />
                 )}
-              </button>
+              </IonItem>
             ))
           ) : (
-            <p className="country-combobox__empty">No countries match that search.</p>
+            <IonItem className="country-combobox__empty" lines="none">
+              <IonLabel>No countries match that search.</IonLabel>
+            </IonItem>
           )}
-        </div>
+        </IonList>
       )}
     </div>
   );

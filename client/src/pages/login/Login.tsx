@@ -1,4 +1,4 @@
-import { IonCheckbox } from '@ionic/react';
+import { IonCheckbox, IonRow } from '@ionic/react';
 import { lockClosedOutline, personOutline } from 'ionicons/icons';
 import AuthInput from '../../components/auth/AuthInput';
 import AuthPage from '../../components/auth/AuthPage';
@@ -36,11 +36,11 @@ const Login: React.FC = () => (
       required
     />
 
-    <div className="auth-form-options">
+    <IonRow className="auth-form-options ion-align-items-center ion-justify-content-between">
       <IonCheckbox className="auth-checkbox" name="rememberMe" labelPlacement="end">
         Keep me signed in
       </IonCheckbox>
-    </div>
+    </IonRow>
   </AuthPage>
 );
 
