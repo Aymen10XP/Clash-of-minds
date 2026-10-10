@@ -12,7 +12,6 @@ const PracticeTopics: React.FC = () => {
   const { goBackAfterPress } = usePressNavigation({ delay: 140, feedback: 'light' });
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const selectedTopic = practiceTopics.find((topic) => topic.id === selectedTopicId);
-
   const handleBack = () => {
     goBackAfterPress(appRoutes.practice);
   };
@@ -35,6 +34,18 @@ const PracticeTopics: React.FC = () => {
         role="region"
         aria-labelledby="topic-title"
       >
+        <IonRow className="topic-catalogue__heading ion-align-items-end ion-justify-content-between">
+          <IonCol className="ion-no-padding">
+            <p>Knowledge domains</p>
+            <h2 id="topic-title">Select a topic</h2>
+          </IonCol>
+          <IonCol className="topic-catalogue__count ion-no-padding" size="auto">
+            <IonBadge>{practiceTopics.length} topics</IonBadge>
+          </IonCol>
+        </IonRow>
+        <p className="topic-catalogue__intro">
+          Focus your training on one archive and sharpen your recall.
+        </p>
 
         <IonRow className="topic-grid">
           {practiceTopics.map((topic) => (
@@ -57,6 +68,11 @@ const PracticeTopics: React.FC = () => {
             </IonCol>
           ))}
         </IonRow>
+        <IonNote className="topic-catalogue__selection" aria-live="polite">
+          {selectedTopic
+            ? `${selectedTopic.title} selected. Your training path is ready.`
+            : 'Choose an archive to prepare a focused run.'}
+        </IonNote>
       </IonGrid>
     </GameSubpage>
   );
