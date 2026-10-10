@@ -17,10 +17,18 @@
 
 .auth-topbar {
   min-height: 48px;
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
-  align-items: center;
-  gap: 12px;
+  flex-wrap: nowrap;
+  column-gap: 12px;
+}
+
+.auth-topbar__side {
+  flex: 0 0 48px;
+  width: 48px;
+  max-width: 48px;
+}
+
+.auth-topbar__brand {
+  min-width: 0;
 }
 
 .auth-back {
@@ -56,18 +64,21 @@
   width: 100%;
   max-width: 100%;
   min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 106px);
-  display: grid;
-  place-items: center;
   padding: clamp(30px, 6vh, 58px) 0 18px;
+}
+
+.auth-layout__column {
+  max-width: var(--auth-panel-width, 430px);
 }
 
 .auth-panel {
   position: relative;
   box-sizing: border-box;
   width: 100%;
-  max-width: var(--auth-panel-width, 430px);
+  max-width: 100%;
   min-width: 0;
   overflow: visible;
+  margin: 0;
   padding: clamp(20px, 5vw, 30px);
   border: 1px solid rgba(106, 153, 235, 0.3);
   border-radius: var(--game-radius-control);
@@ -78,6 +89,10 @@
     inset 0 0 0 1px rgba(242, 201, 76, 0.06),
     0 24px 70px rgba(0, 3, 13, 0.36);
   animation: auth-rise-in 500ms 80ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.auth-panel__content {
+  padding: 0;
 }
 
 .auth-panel::before {
@@ -92,19 +107,20 @@
 }
 
 .auth-form,
-.auth-fields {
+.auth-fields,
+.auth-field-row {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  display: grid;
 }
 
 .auth-form {
+  display: grid;
   gap: 20px;
 }
 
-.auth-fields {
-  gap: 14px;
+.auth-field-row + .auth-field-row {
+  margin-top: 14px;
 }
 
 .auth-input {
@@ -145,9 +161,6 @@
 }
 
 .auth-form-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 14px;
 }
 
@@ -193,9 +206,6 @@
 
 .auth-alternate {
   min-height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 4px;
   color: #aebed8;
   font-size: 0.8rem;

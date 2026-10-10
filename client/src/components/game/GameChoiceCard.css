@@ -1,34 +1,47 @@
 .game-choice-card {
-  position: relative;
-  width: 100%;
-  min-height: 112px;
-  padding: 18px;
-  border: 3px double rgba(180, 146, 61, 0.48);
-  border-radius: var(--game-radius-control);
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 24px;
-  align-items: center;
-  gap: 14px;
-  overflow: hidden;
-  color: var(--game-color-text);
-  background:
+  --background:
     repeating-linear-gradient(135deg, transparent 0 13px, rgba(242, 201, 76, 0.025) 13px 14px),
     linear-gradient(105deg, rgba(17, 36, 70, 0.98), rgba(6, 20, 47, 0.98));
+  --background-activated: linear-gradient(105deg, rgba(40, 59, 86, 0.99), rgba(13, 35, 70, 0.99));
+  --background-hover: linear-gradient(105deg, rgba(31, 50, 81, 0.99), rgba(10, 29, 62, 0.99));
+  --border-color: rgba(180, 146, 61, 0.48);
+  --color: var(--game-color-text);
+  --inner-border-width: 0;
+  --inner-padding-end: 18px;
+  --min-height: 112px;
+  --padding-start: 18px;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 112px;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--game-radius-control);
+  cursor: pointer;
+}
+
+.game-choice-card::part(native) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: inherit;
+  overflow: hidden;
+  border: 3px double var(--border-color);
+  border-radius: var(--game-radius-control);
   box-shadow:
     inset 0 0 0 1px rgba(21, 64, 130, 0.65),
     inset 0 0 28px rgba(0, 3, 13, 0.34),
     0 13px 36px rgba(0, 3, 13, 0.24);
   clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 160ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.game-choice-card::before {
-  content: '';
+.game-choice-card__flare {
   position: absolute;
   inset: 0;
+  z-index: 0;
   opacity: 0;
   background: linear-gradient(105deg, transparent 20%, rgba(242, 201, 76, 0.15), transparent 72%);
   transform: translateX(-70%);
@@ -37,30 +50,33 @@
 }
 
 .game-choice-card:hover {
-  border-color: rgba(242, 201, 76, 0.72);
+  --border-color: rgba(242, 201, 76, 0.72);
 }
 
-.game-choice-card:active {
+.game-choice-card::part(native):active {
   transform: scale(0.982);
 }
 
-.game-choice-card:focus-visible {
+.game-choice-card.ion-focused::part(native) {
   outline: 2px solid #f2c94c;
   outline-offset: 3px;
 }
 
 .game-choice-card--selected {
-  border-color: rgba(255, 222, 116, 0.96);
-  background:
+  --background:
     repeating-linear-gradient(135deg, transparent 0 13px, rgba(242, 201, 76, 0.04) 13px 14px),
     linear-gradient(105deg, rgba(45, 61, 84, 0.99), rgba(17, 40, 77, 0.99));
+  --border-color: rgba(255, 222, 116, 0.96);
+}
+
+.game-choice-card--selected::part(native) {
   box-shadow:
     inset 0 0 0 1px rgba(242, 201, 76, 0.2),
     inset 0 0 32px rgba(242, 201, 76, 0.06),
     0 0 28px rgba(242, 201, 76, 0.12);
 }
 
-.game-choice-card--selected::before {
+.game-choice-card--selected .game-choice-card__flare {
   opacity: 1;
   transform: translateX(70%);
 }
@@ -68,12 +84,13 @@
 .game-choice-card__icon {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   width: 48px;
   height: 48px;
+  margin-inline-end: 14px;
+  padding: 11px;
   border: 1px solid rgba(242, 201, 76, 0.4);
   border-radius: 3px;
-  display: grid;
-  place-items: center;
   color: var(--game-color-accent);
   background: rgba(242, 201, 76, 0.07);
   font-size: 1.45rem;
@@ -82,9 +99,22 @@
 .game-choice-card__content {
   position: relative;
   z-index: 1;
+  flex: 1 1 0;
+  width: 0;
   min-width: 0;
+  max-width: 100%;
+  margin: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.game-choice-card__content > span {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .game-choice-card__meta {
@@ -114,8 +144,10 @@
 .game-choice-card__status {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   width: 22px;
   height: 22px;
+  margin-inline-start: 12px;
   border: 1px solid rgba(96, 118, 158, 0.55);
   border-radius: 50%;
   display: grid;
@@ -138,15 +170,17 @@
 }
 
 .game-choice-card--compact {
+  --inner-padding-end: 14px;
+  --min-height: 94px;
+  --padding-start: 14px;
   min-height: 94px;
-  padding: 14px;
-  grid-template-columns: 40px minmax(0, 1fr) 22px;
-  gap: 11px;
 }
 
 .game-choice-card--compact .game-choice-card__icon {
   width: 40px;
   height: 40px;
+  margin-inline-end: 11px;
+  padding: 9px;
   font-size: 1.2rem;
 }
 
@@ -159,8 +193,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-choice-card,
-  .game-choice-card::before {
+  .game-choice-card::part(native),
+  .game-choice-card__flare {
     transition: none;
   }
 }

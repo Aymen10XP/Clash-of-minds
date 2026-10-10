@@ -1,8 +1,12 @@
 .game-screen-header {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-  align-items: center;
-  gap: 12px;
+  flex-wrap: nowrap;
+  column-gap: 12px;
+}
+
+.game-screen-header__side {
+  flex: 0 0 44px;
+  width: 44px;
+  max-width: 44px;
 }
 
 .game-screen-header__back {
@@ -22,6 +26,7 @@
 }
 
 .game-screen-header__copy {
+  flex: 1 1 auto;
   min-width: 0;
   text-align: center;
 }

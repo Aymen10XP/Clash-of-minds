@@ -1,4 +1,4 @@
-import { IonButton, IonIcon } from '@ionic/react';
+import { IonButton, IonCol, IonIcon, IonRow } from '@ionic/react';
 import { arrowBackOutline } from 'ionicons/icons';
 import './GameScreenHeader.css';
 
@@ -15,18 +15,27 @@ const GameScreenHeader: React.FC<GameScreenHeaderProps> = ({
   onBack,
   backLabel = 'Go back',
 }) => (
-  <header className="game-screen-header">
-    <IonButton className="game-screen-header__back" fill="clear" onClick={onBack} aria-label={backLabel}>
-      <IonIcon icon={arrowBackOutline} slot="icon-only" />
-    </IonButton>
+  <IonRow className="game-screen-header ion-align-items-center">
+    <IonCol className="game-screen-header__side ion-no-padding" size="auto">
+      <IonButton
+        className="game-screen-header__back"
+        fill="clear"
+        onClick={onBack}
+        aria-label={backLabel}
+      >
+        <IonIcon icon={arrowBackOutline} slot="icon-only" />
+      </IonButton>
+    </IonCol>
 
-    <div className="game-screen-header__copy">
+    <IonCol className="game-screen-header__copy ion-no-padding">
       <p>{eyebrow}</p>
       <h1>{title}</h1>
-    </div>
+    </IonCol>
 
-    <span className="game-screen-header__balance" aria-hidden="true" />
-  </header>
+    <IonCol className="game-screen-header__side ion-no-padding" size="auto" aria-hidden="true">
+      <span className="game-screen-header__balance" />
+    </IonCol>
+  </IonRow>
 );
 
 export default GameScreenHeader;

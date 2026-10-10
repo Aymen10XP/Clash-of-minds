@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { IonCol, IonGrid, IonRow } from '@ionic/react';
 import GameChoiceCard from './GameChoiceCard';
 import GameSubpage from './GameSubpage';
 import { usePressNavigation } from '../../hooks/usePressNavigation';
@@ -28,7 +28,6 @@ const ModeSelectionPage: React.FC<ModeSelectionPageProps> = ({
   choices,
   className = '',
 }) => {
-  const titleId = useId();
   const { goBackAfterPress, navigateAfterPress, pendingRoute } = usePressNavigation();
 
   return (
@@ -38,23 +37,32 @@ const ModeSelectionPage: React.FC<ModeSelectionPageProps> = ({
       onBack={() => goBackAfterPress(backRoute)}
       className={`mode-selection-page ${className}`.trim()}
     >
-      <div className="mode-selection-content">
-
-        <section className="mode-selection-grid" aria-label={`${title} modes`}>
+      <IonGrid fixed className="mode-selection-content ion-no-padding">
+        <IonRow
+          className="mode-selection-grid ion-justify-content-center"
+          role="group"
+          aria-label={`${title} modes`}
+        >
           {choices.map((choice) => (
-            <GameChoiceCard
+            <IonCol
+              className="mode-selection-grid__column ion-display-flex ion-justify-content-center"
               key={choice.route}
-              title={choice.title}
-              description={choice.description}
-              meta={choice.meta}
-              icon={choice.icon}
-              selected={pendingRoute === choice.route}
-              disabled={Boolean(pendingRoute && pendingRoute !== choice.route)}
-              onSelect={() => navigateAfterPress(choice.route)}
-            />
+              size="12"
+              sizeMd="6"
+            >
+              <GameChoiceCard
+                title={choice.title}
+                description={choice.description}
+                meta={choice.meta}
+                icon={choice.icon}
+                selected={pendingRoute === choice.route}
+                disabled={Boolean(pendingRoute && pendingRoute !== choice.route)}
+                onSelect={() => navigateAfterPress(choice.route)}
+              />
+            </IonCol>
           ))}
-        </section>
-      </div>
+        </IonRow>
+      </IonGrid>
     </GameSubpage>
   );
 };

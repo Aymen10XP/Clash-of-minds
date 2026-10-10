@@ -26,9 +26,6 @@ const Multiplayer: React.FC = () => (
   <ModeSelectionPage
     eyebrow="Online arena"
     title="Multiplayer"
-    kicker="Choose your contest"
-    heading="How will you enter the arena?"
-    description="Test your knowledge for rank, or open a private duel with a friend."
     backRoute={appRoutes.home}
     choices={multiplayerChoices}
     className="multiplayer-page"

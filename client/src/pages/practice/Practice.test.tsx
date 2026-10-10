@@ -26,7 +26,8 @@ test('opens the topic catalogue on its own route and selects a topic', () => {
   vi.useFakeTimers();
   renderFlow();
 
-  expect(screen.getByRole('heading', { name: 'How will you challenge the archive?' })).toBeDefined();
+    expect(screen.getByRole('group', { name: 'VS Bot modes' })).toBeDefined();
+    expect(screen.getByRole('button', { name: /choose by topic/i })).toBeDefined();
   expect(screen.queryByRole('heading', { name: 'Select a topic' })).toBeNull();
 
   fireEvent.click(screen.getByRole('button', { name: /choose by topic/i }));

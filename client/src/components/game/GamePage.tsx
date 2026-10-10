@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import { IonContent, IonPage } from '@ionic/react';
+import { IonContent, IonGrid, IonPage } from '@ionic/react';
 import GameBackdrop from './GameBackdrop';
 import './GamePage.css';
 
@@ -11,7 +11,7 @@ const GamePage: React.FC<GamePageProps> = ({ children, className = '' }) => (
   <IonPage>
     <IonContent fullscreen className={`game-page ${className}`.trim()}>
       <GameBackdrop />
-      <div className="game-page__content">{children}</div>
+      <IonGrid className="game-page__content ion-no-padding">{children}</IonGrid>
     </IonContent>
   </IonPage>
 );
