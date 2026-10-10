@@ -1,6 +1,7 @@
 import { Navigate, Route } from 'react-router-dom';
 import { IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { PublicOnly, RequireAuth } from '../features/auth/AuthGate';
 import Login from '../pages/login/Login';
 import Register from '../pages/register/Register';
 import Home from '../pages/home/Home';
@@ -17,17 +18,17 @@ import { appRoutes } from './routes';
 const GameRouter: React.FC = () => (
   <IonReactRouter>
     <IonRouterOutlet animated>
-      <Route path={appRoutes.home} element={<Home />} />
-      <Route path={appRoutes.login} element={<Login />} />
-      <Route path={appRoutes.register} element={<Register />} />
-      <Route path={appRoutes.story} element={<Story />} />
-      <Route path={appRoutes.practice} element={<Practice />} />
-      <Route path={appRoutes.practiceTopScore} element={<PracticeTopScore />} />
-      <Route path={appRoutes.practiceTopics} element={<PracticeTopics />} />
-      <Route path={appRoutes.multiplayer} element={<Multiplayer />} />
-      <Route path={appRoutes.multiplayerRanked} element={<RankedMatchmaking />} />
-      <Route path={appRoutes.multiplayerFriendly} element={<FriendlyMatch />} />
-      <Route path={appRoutes.settings} element={<Settings />} />
+      <Route path={appRoutes.home} element={<RequireAuth><Home /></RequireAuth>} />
+      <Route path={appRoutes.login} element={<PublicOnly><Login /></PublicOnly>} />
+      <Route path={appRoutes.register} element={<PublicOnly><Register /></PublicOnly>} />
+      <Route path={appRoutes.story} element={<RequireAuth><Story /></RequireAuth>} />
+      <Route path={appRoutes.practice} element={<RequireAuth><Practice /></RequireAuth>} />
+      <Route path={appRoutes.practiceTopScore} element={<RequireAuth><PracticeTopScore /></RequireAuth>} />
+      <Route path={appRoutes.practiceTopics} element={<RequireAuth><PracticeTopics /></RequireAuth>} />
+      <Route path={appRoutes.multiplayer} element={<RequireAuth><Multiplayer /></RequireAuth>} />
+      <Route path={appRoutes.multiplayerRanked} element={<RequireAuth><RankedMatchmaking /></RequireAuth>} />
+      <Route path={appRoutes.multiplayerFriendly} element={<RequireAuth><FriendlyMatch /></RequireAuth>} />
+      <Route path={appRoutes.settings} element={<RequireAuth><Settings /></RequireAuth>} />
       <Route path={appRoutes.root} element={<Navigate to={appRoutes.home} replace />} />
       <Route path="*" element={<Navigate to={appRoutes.home} replace />} />
     </IonRouterOutlet>
