@@ -204,9 +204,9 @@ class TopScoreApiTests(TestCase):
             content_type='application/json',
         )
 
-    def start_run(self):
+    def start_run(self, data=None):
         self.client.force_login(self.user)
-        response = self.post_json('/api/quiz/top-score/start/')
+        response = self.post_json('/api/quiz/top-score/start/', data)
         self.assertEqual(response.status_code, 201)
         return response.json()
 
@@ -238,6 +238,36 @@ class TopScoreApiTests(TestCase):
         self.assertFalse(result['gameOver'])
         self.assertEqual(result['score'], 1)
         self.assertNotEqual(result['question']['id'], question.pk)
+
+    def test_topic_run_only_returns_questions_from_selected_topic(self):
+        topic_slug = 'ancient-civilizations'
+        payload = self.start_run({'topicSlug': topic_slug})
+        question = Question.objects.get(pk=payload['question']['id'])
+        correct_choice = question.choices.get(is_correct=True)
+
+        self.assertEqual(payload['question']['topic']['slug'], topic_slug)
+        run = TopScoreRun.objects.get(client_run_id=payload['runId'])
+        self.assertEqual(run.topic.slug, topic_slug)
+
+        response = self.post_json(
+            f"/api/quiz/top-score/{payload['runId']}/answer/",
+            {'questionId': question.pk, 'choiceId': correct_choice.pk},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['question']['topic']['slug'], topic_slug)
+
+    def test_start_rejects_an_unknown_topic(self):
+        self.client.force_login(self.user)
+
+        response = self.post_json(
+            '/api/quiz/top-score/start/',
+            {'topicSlug': 'not-a-real-topic'},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['error'], 'The selected topic is not available.')
+        self.assertFalse(TopScoreRun.objects.exists())
 
     def test_wrong_answer_ends_run(self):
         payload = self.start_run()

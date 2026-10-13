@@ -157,6 +157,14 @@ class TopScoreRun(models.Model):
         on_delete=models.CASCADE,
         related_name='top_score_runs',
     )
+    topic = models.ForeignKey(
+        Topic,
+        on_delete=models.PROTECT,
+        related_name='top_score_runs',
+        null=True,
+        blank=True,
+        help_text='Limits the run to one topic when set.',
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     end_reason = models.CharField(max_length=20, choices=EndReason.choices, blank=True)
     score = models.PositiveIntegerField(default=0)
@@ -190,6 +198,14 @@ class TopScoreRun(models.Model):
 
     def clean(self):
         super().clean()
+        if (
+            self.topic_id
+            and self.current_question_id
+            and self.current_question.topic_id != self.topic_id
+        ):
+            raise ValidationError({
+                'current_question': 'The current question must belong to the run topic.',
+            })
         if self.status == self.Status.ACTIVE:
             if self.ended_at is not None or self.end_reason:
                 raise ValidationError('An active run cannot have an end time or end reason.')
@@ -251,6 +267,16 @@ class TopScoreResponse(models.Model):
         super().clean()
         if self.run_id and self.run.status != TopScoreRun.Status.ACTIVE:
             raise ValidationError({'run': 'Responses can only be added to an active run.'})
+
+        if (
+            self.run_id
+            and self.question_id
+            and self.run.topic_id
+            and self.question.topic_id != self.run.topic_id
+        ):
+            raise ValidationError({
+                'question': 'The response question must belong to the run topic.',
+            })
 
         if self.selected_choice_id:
             if self.selected_choice.question_id != self.question_id:

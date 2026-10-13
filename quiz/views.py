@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import AnswerChoice, Question, TopScoreResponse, TopScoreRun
+from .models import AnswerChoice, Question, Topic, TopScoreResponse, TopScoreRun
 
 
 ROUND_TIME_MS = 10_000
@@ -48,7 +48,12 @@ def _best_score(user):
 
 
 def _next_question(run):
-    active = Question.objects.filter(is_active=True).select_related('topic').prefetch_related('choices')
+    active = Question.objects.filter(
+        is_active=True,
+        topic__is_active=True,
+    ).select_related('topic').prefetch_related('choices')
+    if run.topic_id:
+        active = active.filter(topic_id=run.topic_id)
     answered_ids = run.responses.values_list('question_id', flat=True)
     candidates = list(active.exclude(pk__in=answered_ids))
     if not candidates:
@@ -73,6 +78,20 @@ def start_top_score(request):
     if not request.user.is_authenticated:
         return _unauthenticated()
 
+    data = _read_json(request)
+    if data is None:
+        return JsonResponse({'error': 'Request body must contain a JSON object.'}, status=400)
+
+    topic = None
+    topic_slug = data.get('topicSlug')
+    if topic_slug is not None:
+        if not isinstance(topic_slug, str) or not topic_slug.strip():
+            return JsonResponse({'error': 'topicSlug must be a non-empty string.'}, status=400)
+        try:
+            topic = Topic.objects.get(slug=topic_slug.strip(), is_active=True)
+        except Topic.DoesNotExist:
+            return JsonResponse({'error': 'The selected topic is not available.'}, status=404)
+
     now = timezone.now()
     TopScoreRun.objects.filter(user=request.user, status=TopScoreRun.Status.ACTIVE).update(
         status=TopScoreRun.Status.ABANDONED,
@@ -82,7 +101,7 @@ def start_top_score(request):
         question_started_at=None,
     )
 
-    run = TopScoreRun.objects.create(user=request.user)
+    run = TopScoreRun.objects.create(user=request.user, topic=topic)
     question = _next_question(run)
     if question is None:
         _finish_run(run, TopScoreRun.EndReason.QUIT)

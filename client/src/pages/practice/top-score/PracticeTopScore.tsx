@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { IonButton, IonIcon, IonSpinner } from '@ionic/react';
 import { refreshOutline, trophyOutline } from 'ionicons/icons';
+import { useParams } from 'react-router-dom';
 import GameSubpage from '../../../components/game/GameSubpage';
 import {
   answerTopScore,
@@ -20,6 +21,7 @@ const CORRECT_FEEDBACK_MS = 900;
 const WRONG_FEEDBACK_MS = 650;
 
 const PracticeTopScore: React.FC = () => {
+  const { topicSlug } = useParams<{ topicSlug: string }>();
   const { goBackAfterPress } = usePressNavigation({ delay: 100, feedback: 'light' });
   const [phase, setPhase] = useState<GamePhase>('loading');
   const [question, setQuestion] = useState<QuizQuestion | null>(null);
@@ -57,7 +59,7 @@ const PracticeTopScore: React.FC = () => {
     setError('');
     setQuestion(null);
     try {
-      const game = await startTopScore();
+      const game = await startTopScore(topicSlug);
       setRunId(game.runId);
       setScore(game.score);
       setBestScore(game.bestScore);
@@ -67,7 +69,7 @@ const PracticeTopScore: React.FC = () => {
       setError(caught instanceof Error ? caught.message : 'Unable to start Top Score.');
       changePhase('error');
     }
-  }, [beginQuestion, changePhase]);
+  }, [beginQuestion, changePhase, topicSlug]);
 
   useEffect(() => {
     void startGame();
@@ -117,7 +119,7 @@ const PracticeTopScore: React.FC = () => {
     if (runId && !['gameover', 'loading'].includes(phase)) {
       void quitTopScore(runId).catch(() => undefined);
     }
-    goBackAfterPress(appRoutes.practice);
+    goBackAfterPress(topicSlug ? appRoutes.practiceTopics : appRoutes.practice);
   };
 
   const timerSeconds = Math.ceil(remainingMs / 1000);

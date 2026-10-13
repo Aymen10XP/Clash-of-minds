@@ -24,6 +24,7 @@ const GameRouter: React.FC = () => (
       <Route path={appRoutes.story} element={<RequireAuth><Story /></RequireAuth>} />
       <Route path={appRoutes.practice} element={<RequireAuth><Practice /></RequireAuth>} />
       <Route path={appRoutes.practiceTopScore} element={<RequireAuth><PracticeTopScore /></RequireAuth>} />
+      <Route path={appRoutes.practiceTopScoreTopic} element={<RequireAuth><PracticeTopScore /></RequireAuth>} />
       <Route path={appRoutes.practiceTopics} element={<RequireAuth><PracticeTopics /></RequireAuth>} />
       <Route path={appRoutes.multiplayer} element={<RequireAuth><Multiplayer /></RequireAuth>} />
       <Route path={appRoutes.multiplayerRanked} element={<RequireAuth><RankedMatchmaking /></RequireAuth>} />

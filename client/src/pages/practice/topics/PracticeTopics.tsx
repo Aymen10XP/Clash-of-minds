@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { IonBadge, IonCol, IonGrid, IonNote, IonRow } from '@ionic/react';
+import { useNavigate } from 'react-router-dom';
 import GameChoiceCard from '../../../components/game/GameChoiceCard';
 import GameSubpage from '../../../components/game/GameSubpage';
 import { practiceTopics } from '../../../features/practice/topics';
@@ -9,16 +9,15 @@ import { appRoutes } from '../../../routing/routes';
 import './PracticeTopics.css';
 
 const PracticeTopics: React.FC = () => {
+  const navigate = useNavigate();
   const { goBackAfterPress } = usePressNavigation({ delay: 140, feedback: 'light' });
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-  const selectedTopic = practiceTopics.find((topic) => topic.id === selectedTopicId);
   const handleBack = () => {
     goBackAfterPress(appRoutes.practice);
   };
 
   const handleTopicSelect = (topicId: string) => {
     playUiFeedback('light');
-    setSelectedTopicId(topicId);
+    navigate(`${appRoutes.practiceTopScore}/${encodeURIComponent(topicId)}`);
   };
 
   return (
@@ -62,16 +61,13 @@ const PracticeTopics: React.FC = () => {
                 description={topic.description}
                 meta={topic.era}
                 icon={topic.icon}
-                selected={selectedTopicId === topic.id}
                 onSelect={() => handleTopicSelect(topic.id)}
               />
             </IonCol>
           ))}
         </IonRow>
         <IonNote className="topic-catalogue__selection" aria-live="polite">
-          {selectedTopic
-            ? `${selectedTopic.title} selected. Your training path is ready.`
-            : 'Choose an archive to prepare a focused run.'}
+          Choose an archive to start a focused Top Score run.
         </IonNote>
       </IonGrid>
     </GameSubpage>
