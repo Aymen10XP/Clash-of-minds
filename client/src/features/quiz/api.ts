@@ -67,7 +67,10 @@ const post = async <T>(path: string, body: object = {}): Promise<T> => {
   return payload;
 };
 
-export const startTopScore = () => post<TopScoreStart>('top-score/start/');
+export const startTopScore = (topicSlug?: string) => post<TopScoreStart>(
+  'top-score/start/',
+  topicSlug ? { topicSlug } : {},
+);
 
 export const answerTopScore = (
   runId: string,

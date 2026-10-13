@@ -6,6 +6,7 @@ export const appRoutes = {
   story: '/story',
   practice: '/practice',
   practiceTopScore: '/practice/top-score',
+  practiceTopScoreTopic: '/practice/top-score/:topicSlug',
   practiceTopics: '/practice/topics',
   multiplayer: '/multiplayer',
   multiplayerRanked: '/multiplayer/ranked',
