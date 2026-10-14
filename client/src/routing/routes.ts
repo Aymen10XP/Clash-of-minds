@@ -11,6 +11,7 @@ export const appRoutes = {
   multiplayer: '/multiplayer',
   multiplayerRanked: '/multiplayer/ranked',
   multiplayerFriendly: '/multiplayer/friendly',
+  multiplayerMatch: '/multiplayer/match/:matchId',
   settings: '/settings',
 } as const;
 

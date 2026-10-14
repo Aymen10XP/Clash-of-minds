@@ -1,3 +1,211 @@
 .friendly-match-page {
   --game-page-focus-x: 58%;
 }
+
+.friendly-lobby {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 26px 0 12px;
+}
+
+.friendly-lobby__hero,
+.friendly-panel {
+  border: 1px solid rgba(164, 195, 215, 0.18);
+  background: linear-gradient(145deg, rgba(10, 26, 39, 0.94), rgba(6, 15, 25, 0.88));
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
+}
+
+.friendly-lobby__hero {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  padding: clamp(22px, 4vw, 34px);
+  border-radius: 24px;
+}
+
+.friendly-lobby__hero h2 {
+  margin: 3px 0 8px;
+  color: #f7fbff;
+  font-size: clamp(1.45rem, 4vw, 2.15rem);
+  letter-spacing: -0.035em;
+}
+
+.friendly-lobby__hero p {
+  max-width: 610px;
+  margin: 0;
+  color: rgba(224, 237, 246, 0.68);
+  line-height: 1.55;
+}
+
+.friendly-lobby__hero .friendly-lobby__kicker {
+  color: #edb658;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.friendly-lobby__error {
+  grid-column: 1 / -1;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 115, 115, 0.35);
+  border-radius: 14px;
+  background: rgba(121, 31, 31, 0.25);
+  color: #ffd1d1;
+}
+
+.friendly-panel {
+  min-width: 0;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.friendly-panel--matches {
+  grid-column: 1 / -1;
+}
+
+.friendly-panel__heading,
+.friendly-panel__heading > div,
+.friendly-player,
+.friendly-invite,
+.friendly-match {
+  display: flex;
+  align-items: center;
+}
+
+.friendly-panel__heading {
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.friendly-panel__heading > div {
+  gap: 10px;
+}
+
+.friendly-panel__heading span {
+  color: #edb658;
+  font-size: 0.69rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.friendly-panel__heading h3 {
+  margin: 0;
+  color: #f5f9fc;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.friendly-panel__heading ion-badge {
+  --background: rgba(237, 182, 88, 0.14);
+  --color: #edb658;
+}
+
+.friendly-search {
+  --background: rgba(255, 255, 255, 0.055);
+  --border-radius: 14px;
+  --color: #f4f8fb;
+  --padding-start: 14px;
+  --placeholder-color: rgba(220, 233, 242, 0.46);
+  min-height: 50px;
+  border: 1px solid rgba(173, 203, 222, 0.15);
+  border-radius: 14px;
+}
+
+.friendly-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.friendly-player,
+.friendly-invite,
+.friendly-match {
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 62px;
+  padding: 10px 12px;
+  border: 1px solid rgba(164, 195, 215, 0.12);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.friendly-player > div:nth-child(2),
+.friendly-invite > div:first-child,
+.friendly-match > div:first-child {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+}
+
+.friendly-player strong,
+.friendly-invite strong,
+.friendly-match strong {
+  color: #f5f9fc;
+  font-size: 0.92rem;
+}
+
+.friendly-player span,
+.friendly-invite small,
+.friendly-match small {
+  color: rgba(217, 231, 240, 0.52);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.friendly-avatar {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(237, 182, 88, 0.36);
+  border-radius: 13px;
+  background: rgba(237, 182, 88, 0.09);
+  color: #f2c877;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.friendly-invite__actions {
+  display: flex;
+  gap: 3px;
+}
+
+.friendly-empty,
+.friendly-loading {
+  margin: 12px 2px 2px;
+  color: rgba(217, 231, 240, 0.52);
+  font-size: 0.87rem;
+}
+
+.friendly-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .friendly-lobby {
+    grid-template-columns: 1fr;
+  }
+
+  .friendly-panel--matches {
+    grid-column: auto;
+  }
+
+  .friendly-player {
+    flex-wrap: wrap;
+  }
+
+  .friendly-player ion-button {
+    width: 100%;
+    margin-left: 52px;
+  }
+}
