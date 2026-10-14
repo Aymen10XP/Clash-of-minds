@@ -183,6 +183,36 @@ class SeedQuizCommandTests(TestCase):
         for question in Question.objects.prefetch_related('choices'):
             self.assertEqual(question.choices.count(), 4)
             self.assertEqual(question.choices.filter(is_correct=True).count(), 1)
+
+    def test_seed_command_preserves_choices_referenced_by_responses(self):
+        call_command('seed_quiz', verbosity=0)
+        question = Question.objects.prefetch_related('choices').first()
+        selected_choice = question.choices.first()
+        user = User.objects.create_user(
+            username='seed-history-player',
+            email='seed-history@example.com',
+            password='secure-test-password',
+            country='TN',
+        )
+        run = TopScoreRun.objects.create(
+            user=user,
+            current_question=question,
+            question_started_at=timezone.now(),
+        )
+        response = TopScoreResponse.objects.create(
+            run=run,
+            question=question,
+            selected_choice=selected_choice,
+            sequence=1,
+            response_time_ms=1_000,
+        )
+
+        call_command('seed_quiz', verbosity=0)
+
+        response.refresh_from_db()
+        self.assertEqual(response.selected_choice_id, selected_choice.pk)
+        self.assertEqual(question.choices.count(), 4)
+        self.assertEqual(question.choices.filter(is_correct=True).count(), 1)
 import json
 
 

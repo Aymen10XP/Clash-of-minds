@@ -23,6 +23,7 @@ from .models import (
 
 
 MATCH_DURATION_MS = 5 * 60 * 1000
+QUESTION_DURATION_MS = 15 * 1000
 
 
 def _read_json(request):
@@ -55,8 +56,11 @@ def _ordered_choices(round_, participant):
 
 def _round_payload(round_, participant):
     answer = round_.answers.filter(participant=participant).first()
+    elapsed_ms = max(0, int((timezone.now() - round_.started_at).total_seconds() * 1000))
     return {
         'sequence': round_.sequence,
+        'durationMs': QUESTION_DURATION_MS,
+        'remainingMs': max(0, QUESTION_DURATION_MS - elapsed_ms),
         'question': {
             'id': round_.question_id,
             'topic': {
@@ -104,6 +108,8 @@ def _match_payload(match, current_user):
                 'score': participant.score,
                 'hearts': participant.hearts,
                 'ready': participant.is_ready,
+                'closed': participant.closed_at is not None,
+                'rematchRequested': participant.rematch_requested,
                 'isCurrentUser': participant.player_id == current_user.pk,
             }
             for participant in participants
@@ -114,6 +120,7 @@ def _match_payload(match, current_user):
             'winnerId': last_round.winner.player_id if last_round.winner_id else None,
             'correctChoiceId': last_round.question.choices.get(is_correct=True).pk,
         } if last_round else None,
+        'rematchMatchId': str(match.rematch_match_id) if match.rematch_match_id else None,
     }
 
 
@@ -138,13 +145,15 @@ def _create_round(match, question=None):
     return MatchRound.objects.create(match=match, question=question, sequence=sequence)
 
 
-def _finish_match(match, reason):
+def _finish_match(match, reason, winner_player=None):
     participants = list(match.participants.select_for_update().all())
-    highest_hearts = max(participant.hearts for participant in participants)
-    leaders = [participant for participant in participants if participant.hearts == highest_hearts]
+    if winner_player is None:
+        highest_hearts = max(participant.hearts for participant in participants)
+        leaders = [participant for participant in participants if participant.hearts == highest_hearts]
+        winner_player = leaders[0].player if len(leaders) == 1 else None
     match.status = KnowledgeMatch.Status.COMPLETED
     match.end_reason = reason
-    match.winner = leaders[0].player if len(leaders) == 1 else None
+    match.winner = winner_player
     match.ended_at = timezone.now()
     match.save(update_fields=('status', 'end_reason', 'winner', 'ended_at'))
     MatchRound.objects.filter(match=match, status=MatchRound.Status.ACTIVE).update(
@@ -163,6 +172,28 @@ def _expire_match_if_needed(match):
         match.refresh_from_db()
         return True
     return False
+
+
+def _expire_round_if_needed(match):
+    if match.status != KnowledgeMatch.Status.ACTIVE:
+        return False
+    round_ = match.rounds.filter(status=MatchRound.Status.ACTIVE).select_for_update().first()
+    if (
+        round_ is not None
+        and timezone.now() >= round_.started_at + timedelta(milliseconds=QUESTION_DURATION_MS)
+    ):
+        _resolve_round(match, round_, _winner_from_answers(round_))
+        return True
+    return False
+
+
+def _winner_from_answers(round_):
+    correct_answers = list(
+        round_.answers.filter(is_correct=True)
+        .select_related('participant')
+        .order_by('answered_at')
+    )
+    return correct_answers[0].participant if correct_answers else None
 
 
 def _resolve_round(match, round_, winner=None):
@@ -345,6 +376,7 @@ def match_list(request):
         return _unauthenticated()
     matches = KnowledgeMatch.objects.filter(
         participants__player=request.user,
+        participants__closed_at__isnull=True,
     ).prefetch_related('participants__player').order_by('-created_at')[:25]
     return JsonResponse({
         'matches': [_match_payload(match, request.user) for match in matches],
@@ -370,6 +402,8 @@ def match_detail(request, match_id):
         participants__player=request.user,
     )
     _expire_match_if_needed(match)
+    _expire_round_if_needed(match)
+    match.refresh_from_db()
     return JsonResponse({'match': _match_payload(match, request.user)})
 
 
@@ -424,6 +458,9 @@ def submit_match_answer(request, match_id):
     )
     if _expire_match_if_needed(match):
         return JsonResponse({'match': _match_payload(match, request.user)})
+    if _expire_round_if_needed(match):
+        match.refresh_from_db()
+        return JsonResponse({'match': _match_payload(match, request.user)})
     if match.status != KnowledgeMatch.Status.ACTIVE:
         return JsonResponse({'error': 'This match is not active.'}, status=409)
     participant = MatchParticipant.objects.select_for_update().get(
@@ -445,14 +482,89 @@ def submit_match_answer(request, match_id):
     except AnswerChoice.DoesNotExist:
         return JsonResponse({'error': 'That answer is not valid for this question.'}, status=400)
 
-    answer = MatchAnswer.objects.create(
+    MatchAnswer.objects.create(
         round=round_,
         participant=participant,
         selected_choice=choice,
     )
-    if answer.is_correct:
-        _resolve_round(match, round_, participant)
-    elif round_.answers.count() == 2:
-        _resolve_round(match, round_)
+    if round_.answers.count() == 2:
+        _resolve_round(match, round_, _winner_from_answers(round_))
     match.refresh_from_db()
     return JsonResponse({'match': _match_payload(match, request.user)})
+
+
+@require_POST
+@transaction.atomic
+def request_rematch(request, match_id):
+    if not request.user.is_authenticated:
+        return _unauthenticated()
+    match = get_object_or_404(
+        KnowledgeMatch.objects.select_for_update(),
+        pk=match_id,
+        participants__player=request.user,
+    )
+    if match.status != KnowledgeMatch.Status.COMPLETED:
+        return JsonResponse({'error': 'A rematch can only be requested after the duel.'}, status=409)
+
+    participant = MatchParticipant.objects.select_for_update().get(
+        match=match,
+        player=request.user,
+    )
+    if participant.closed_at is not None:
+        return JsonResponse({'error': 'You already closed this room.'}, status=409)
+    if not participant.rematch_requested:
+        participant.rematch_requested = True
+        participant.save(update_fields=('rematch_requested',))
+
+    participants = list(match.participants.select_for_update().select_related('player').all())
+    if match.rematch_match_id is None and all(item.rematch_requested for item in participants):
+        host = next(item for item in participants if item.seat == MatchParticipant.Seat.HOST)
+        guest = next(item for item in participants if item.seat == MatchParticipant.Seat.GUEST)
+        invitation = MatchInvitation.objects.create(
+            sender=host.player,
+            recipient=guest.player,
+            status=MatchInvitation.Status.ACCEPTED,
+            responded_at=timezone.now(),
+        )
+        rematch = KnowledgeMatch.objects.create(invitation=invitation)
+        MatchParticipant.objects.bulk_create([
+            MatchParticipant(match=rematch, player=host.player, seat=MatchParticipant.Seat.HOST),
+            MatchParticipant(match=rematch, player=guest.player, seat=MatchParticipant.Seat.GUEST),
+        ])
+        match.rematch_match = rematch
+        match.save(update_fields=('rematch_match',))
+
+    match.refresh_from_db()
+    return JsonResponse({'match': _match_payload(match, request.user)})
+
+
+@require_POST
+@transaction.atomic
+def close_match(request, match_id):
+    if not request.user.is_authenticated:
+        return _unauthenticated()
+    match = get_object_or_404(
+        KnowledgeMatch.objects.select_for_update(),
+        pk=match_id,
+        participants__player=request.user,
+    )
+    participant = MatchParticipant.objects.select_for_update().get(
+        match=match,
+        player=request.user,
+    )
+    if participant.closed_at is None:
+        participant.closed_at = timezone.now()
+        participant.save(update_fields=('closed_at',))
+
+    if match.status == KnowledgeMatch.Status.ACTIVE:
+        opponent = match.participants.select_for_update().exclude(pk=participant.pk).get()
+        _finish_match(match, KnowledgeMatch.EndReason.FORFEIT, opponent.player)
+
+    if not match.participants.filter(closed_at__isnull=True).exists():
+        match.delete()
+        return JsonResponse({'terminated': True, 'match': None})
+
+    return JsonResponse({
+        'terminated': False,
+        'match': _match_payload(match, request.user),
+    })

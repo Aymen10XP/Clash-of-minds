@@ -189,33 +189,51 @@ class MultiplayerApiTests(TestCase):
         self.assertSetEqual(set(alice_choices), set(bob_choices))
         self.assertNotEqual(alice_choices, bob_choices)
 
-    def test_first_correct_answer_removes_opponent_heart(self):
+    def test_first_answer_waits_for_opponent_before_resolving_round(self):
         match = self.create_active_match()
         correct_choice = self.question.choices.get(is_correct=True)
+        wrong_choice = self.question.choices.filter(is_correct=False).first()
         self.client.force_login(self.alice)
 
-        response = self.post_json(
+        first = self.post_json(
             f'/api/multiplayer/matches/{match.pk}/answer/',
             {'questionId': self.question.pk, 'choiceId': correct_choice.pk},
         )
 
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()['match']
+        self.assertEqual(first.status_code, 200)
+        first_payload = first.json()['match']
+        bob = next(player for player in first_payload['participants'] if player['id'] == self.bob.pk)
+        self.assertEqual(bob['hearts'], 3)
+        self.assertEqual(first_payload['currentRound']['sequence'], 1)
+        self.assertTrue(first_payload['currentRound']['hasAnswered'])
+
+        self.client.force_login(self.bob)
+        second = self.post_json(
+            f'/api/multiplayer/matches/{match.pk}/answer/',
+            {'questionId': self.question.pk, 'choiceId': wrong_choice.pk},
+        )
+
+        payload = second.json()['match']
         bob = next(player for player in payload['participants'] if player['id'] == self.bob.pk)
         self.assertEqual(bob['hearts'], 2)
         self.assertEqual(payload['currentRound']['sequence'], 2)
 
     def test_match_ends_when_a_player_loses_all_hearts(self):
         match = self.create_active_match()
-        self.client.force_login(self.alice)
-
         payload = None
         for _ in range(3):
             active_round = MatchRound.objects.get(match=match, status=MatchRound.Status.ACTIVE)
             correct_choice = active_round.question.choices.get(is_correct=True)
-            response = self.post_json(
+            wrong_choice = active_round.question.choices.filter(is_correct=False).first()
+            self.client.force_login(self.alice)
+            self.post_json(
                 f'/api/multiplayer/matches/{match.pk}/answer/',
                 {'questionId': active_round.question_id, 'choiceId': correct_choice.pk},
+            )
+            self.client.force_login(self.bob)
+            response = self.post_json(
+                f'/api/multiplayer/matches/{match.pk}/answer/',
+                {'questionId': active_round.question_id, 'choiceId': wrong_choice.pk},
             )
             payload = response.json()['match']
 
@@ -269,3 +287,81 @@ class MultiplayerApiTests(TestCase):
 
         self.assertEqual(payload['status'], KnowledgeMatch.Status.COMPLETED)
         self.assertIsNone(payload['winnerId'])
+
+    def test_expired_question_timer_advances_to_the_next_round(self):
+        match = self.create_active_match()
+        match.rounds.update(started_at=timezone.now() - timedelta(seconds=16))
+        self.client.force_login(self.alice)
+
+        payload = self.client.get(f'/api/multiplayer/matches/{match.pk}/').json()['match']
+
+        self.assertEqual(payload['currentRound']['sequence'], 2)
+        self.assertEqual(payload['currentRound']['durationMs'], 15_000)
+        self.assertTrue(all(player['hearts'] == 3 for player in payload['participants']))
+
+    def test_correct_answer_wins_when_opponent_does_not_answer_before_deadline(self):
+        match = self.create_active_match()
+        correct_choice = self.question.choices.get(is_correct=True)
+        self.client.force_login(self.alice)
+        first = self.post_json(
+            f'/api/multiplayer/matches/{match.pk}/answer/',
+            {'questionId': self.question.pk, 'choiceId': correct_choice.pk},
+        )
+        self.assertEqual(first.json()['match']['currentRound']['sequence'], 1)
+        match.rounds.filter(status=MatchRound.Status.ACTIVE).update(
+            started_at=timezone.now() - timedelta(seconds=16),
+        )
+
+        self.client.force_login(self.bob)
+        payload = self.client.get(f'/api/multiplayer/matches/{match.pk}/').json()['match']
+
+        bob = next(player for player in payload['participants'] if player['id'] == self.bob.pk)
+        self.assertEqual(bob['hearts'], 2)
+        self.assertEqual(payload['currentRound']['sequence'], 2)
+
+    def test_rematch_is_created_after_both_players_request_it(self):
+        match = self.create_active_match()
+        match.status = KnowledgeMatch.Status.COMPLETED
+        match.end_reason = KnowledgeMatch.EndReason.TIME
+        match.ended_at = timezone.now()
+        match.save(update_fields=('status', 'end_reason', 'ended_at'))
+
+        self.client.force_login(self.alice)
+        first = self.post_json(f'/api/multiplayer/matches/{match.pk}/rematch/')
+        self.assertIsNone(first.json()['match']['rematchMatchId'])
+
+        self.client.force_login(self.bob)
+        second = self.post_json(f'/api/multiplayer/matches/{match.pk}/rematch/')
+
+        rematch_id = second.json()['match']['rematchMatchId']
+        self.assertIsNotNone(rematch_id)
+        rematch = KnowledgeMatch.objects.get(pk=rematch_id)
+        self.assertEqual(rematch.status, KnowledgeMatch.Status.WAITING)
+        self.assertSetEqual(
+            set(rematch.participants.values_list('player_id', flat=True)),
+            {self.alice.pk, self.bob.pk},
+        )
+
+    def test_room_is_deleted_only_after_both_players_close_it(self):
+        match = self.create_active_match()
+        self.client.force_login(self.alice)
+
+        first = self.post_json(f'/api/multiplayer/matches/{match.pk}/close/')
+
+        self.assertFalse(first.json()['terminated'])
+        self.assertEqual(first.json()['match']['status'], KnowledgeMatch.Status.COMPLETED)
+        self.assertEqual(first.json()['match']['winnerId'], self.bob.pk)
+        self.assertEqual(first.json()['match']['endReason'], KnowledgeMatch.EndReason.FORFEIT)
+        self.assertTrue(KnowledgeMatch.objects.filter(pk=match.pk).exists())
+        self.assertFalse(any(
+            item['id'] == str(match.pk)
+            for item in self.client.get('/api/multiplayer/matches/').json()['matches']
+        ))
+
+        self.client.force_login(self.bob)
+        winner_view = self.client.get(f'/api/multiplayer/matches/{match.pk}/').json()['match']
+        self.assertEqual(winner_view['winnerId'], self.bob.pk)
+        second = self.post_json(f'/api/multiplayer/matches/{match.pk}/close/')
+
+        self.assertTrue(second.json()['terminated'])
+        self.assertFalse(KnowledgeMatch.objects.filter(pk=match.pk).exists())

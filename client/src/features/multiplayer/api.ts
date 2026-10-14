@@ -16,11 +16,15 @@ export type MatchParticipant = MultiplayerPlayer & {
   score: number;
   hearts: number;
   ready: boolean;
+  closed: boolean;
+  rematchRequested: boolean;
   isCurrentUser: boolean;
 };
 
 export type MatchRound = {
   sequence: number;
+  durationMs: number;
+  remainingMs: number;
   question: {
     id: number;
     topic: { slug: string; title: string };
@@ -38,7 +42,7 @@ export type KnowledgeMatch = {
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
-  endReason: 'hearts' | 'time' | null;
+  endReason: 'hearts' | 'time' | 'forfeit' | null;
   winnerId: number | null;
   durationMs: number;
   remainingMs: number;
@@ -49,6 +53,7 @@ export type KnowledgeMatch = {
     winnerId: number | null;
     correctChoiceId: number;
   } | null;
+  rematchMatchId: string | null;
 };
 
 export class MultiplayerApiError extends Error {
@@ -134,3 +139,11 @@ export const markMatchReady = async (matchId: string) => (
 export const submitMatchAnswer = async (matchId: string, questionId: number, choiceId: number) => (
   post<{ match: KnowledgeMatch }>(`matches/${matchId}/answer/`, { questionId, choiceId })
 ).then((payload) => payload.match);
+
+export const requestMatchRematch = async (matchId: string) => (
+  post<{ match: KnowledgeMatch }>(`matches/${matchId}/rematch/`)
+).then((payload) => payload.match);
+
+export const closeMatchRoom = async (matchId: string) => (
+  post<{ terminated: boolean; match: KnowledgeMatch | null }>(`matches/${matchId}/close/`)
+);

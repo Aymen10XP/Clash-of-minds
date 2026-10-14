@@ -2,7 +2,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { Route, Routes } from 'react-router-dom';
 import {
+  closeMatchRoom,
   fetchMatch,
+  MultiplayerApiError,
+  requestMatchRematch,
   submitMatchAnswer,
   type KnowledgeMatch,
 } from '../../../features/multiplayer/api';
@@ -16,7 +19,9 @@ vi.mock('../../../features/multiplayer/api', async () => {
   return {
     ...actual,
     fetchMatch: vi.fn(),
+    closeMatchRoom: vi.fn(),
     markMatchReady: vi.fn(),
+    requestMatchRematch: vi.fn(),
     submitMatchAnswer: vi.fn(),
   };
 });
@@ -32,11 +37,13 @@ const activeMatch: KnowledgeMatch = {
   durationMs: 300_000,
   remainingMs: 295_000,
   participants: [
-    { id: 1, username: 'alice', country: 'TN', seat: 'host', score: 0, hearts: 3, ready: true, isCurrentUser: true },
-    { id: 2, username: 'bob', country: 'US', seat: 'guest', score: 0, hearts: 3, ready: true, isCurrentUser: false },
+    { id: 1, username: 'alice', country: 'TN', seat: 'host', score: 0, hearts: 3, ready: true, closed: false, rematchRequested: false, isCurrentUser: true },
+    { id: 2, username: 'bob', country: 'US', seat: 'guest', score: 0, hearts: 3, ready: true, closed: false, rematchRequested: false, isCurrentUser: false },
   ],
   currentRound: {
     sequence: 1,
+    durationMs: 15_000,
+    remainingMs: 14_500,
     hasAnswered: false,
     selectedChoiceId: null,
     question: {
@@ -53,12 +60,14 @@ const activeMatch: KnowledgeMatch = {
     },
   },
   lastRound: null,
+  rematchMatchId: null,
 };
 
 const renderRoom = () => render(
   <TestIonRouter initialEntry="/multiplayer/match/match-1">
     <Routes>
       <Route path="/multiplayer/match/:matchId" element={<MatchRoom />} />
+      <Route path="/multiplayer/friendly" element={<div>Friendly lobby</div>} />
     </Routes>
   </TestIonRouter>,
 );
@@ -69,6 +78,8 @@ beforeEach(() => {
     ...activeMatch,
     currentRound: { ...activeMatch.currentRound!, hasAnswered: true, selectedChoiceId: 70 },
   });
+  vi.mocked(requestMatchRematch).mockResolvedValue(activeMatch);
+  vi.mocked(closeMatchRoom).mockResolvedValue({ terminated: false, match: activeMatch });
 });
 
 afterEach(() => {
@@ -85,4 +96,11 @@ test('renders the synchronized duel and submits an answer', async () => {
 
   await waitFor(() => expect(submitMatchAnswer).toHaveBeenCalledWith('match-1', 7, 70));
   expect(await screen.findByText(/answer locked/i)).toBeDefined();
+});
+
+test('returns to the friendly lobby when the room has been terminated', async () => {
+  vi.mocked(fetchMatch).mockRejectedValueOnce(new MultiplayerApiError('Room not found.', 404));
+  renderRoom();
+
+  expect(await screen.findByText('Friendly lobby')).toBeDefined();
 });

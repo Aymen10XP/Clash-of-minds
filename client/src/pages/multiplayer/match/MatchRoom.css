@@ -176,6 +176,15 @@
   text-transform: uppercase;
 }
 
+.match-game__meta .match-game__question-timer {
+  margin-left: auto;
+  color: #75d5a3;
+}
+
+.match-game__meta .match-game__question-timer.is-critical {
+  color: #ff7c72;
+}
+
 .match-game h2 {
   margin: 18px 0 22px;
   color: #f5f9fc;

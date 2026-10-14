@@ -292,18 +292,33 @@ class Command(BaseCommand):
             question.is_active = False
             question.difficulty = values['difficulty']
             question.save()
-            question.choices.all().delete()
 
             correct_position = (question_index % 4) + 1
             choices = list(values['wrong'])
             choices.insert(correct_position - 1, values['correct'])
+            existing_choices = {
+                choice.position: choice
+                for choice in question.choices.all()
+            }
+
+            # Preserve choice primary keys because completed runs reference them.
+            # Clear correctness first so changing the correct position cannot
+            # temporarily violate the one-correct-choice database constraint.
+            question.choices.update(is_correct=False)
             for position, text in enumerate(choices, start=1):
-                AnswerChoice.objects.create(
-                    question=question,
-                    text=text,
-                    position=position,
-                    is_correct=position == correct_position,
-                )
+                choice = existing_choices.get(position)
+                if choice is None:
+                    AnswerChoice.objects.create(
+                        question=question,
+                        text=text,
+                        position=position,
+                        is_correct=position == correct_position,
+                    )
+                    continue
+
+                choice.text = text
+                choice.is_correct = position == correct_position
+                choice.save(update_fields=('text', 'is_correct'))
 
             question.is_active = True
             question.save()

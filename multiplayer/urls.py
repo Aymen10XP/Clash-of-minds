@@ -2,10 +2,12 @@ from django.urls import path
 
 from .views import (
     cancel_invitation,
+    close_match,
     invitation_list,
     match_detail,
     match_list,
     respond_to_invitation,
+    request_rematch,
     search_players,
     send_invitation,
     set_match_ready,
@@ -23,4 +25,6 @@ urlpatterns = [
     path('matches/<uuid:match_id>/', match_detail, name='multiplayer-match-detail'),
     path('matches/<uuid:match_id>/ready/', set_match_ready, name='multiplayer-match-ready'),
     path('matches/<uuid:match_id>/answer/', submit_match_answer, name='multiplayer-match-answer'),
+    path('matches/<uuid:match_id>/rematch/', request_rematch, name='multiplayer-match-rematch'),
+    path('matches/<uuid:match_id>/close/', close_match, name='multiplayer-match-close'),
 ]

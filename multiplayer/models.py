@@ -65,6 +65,7 @@ class KnowledgeMatch(models.Model):
     class EndReason(models.TextChoices):
         HEARTS = 'hearts', 'A player lost all hearts'
         TIME = 'time', 'Five-minute timer expired'
+        FORFEIT = 'forfeit', 'A player left the room'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     invitation = models.OneToOneField(
@@ -84,6 +85,13 @@ class KnowledgeMatch(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
+    rematch_match = models.OneToOneField(
+        'self',
+        on_delete=models.SET_NULL,
+        related_name='previous_match',
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         ordering = ('-created_at',)
@@ -112,6 +120,8 @@ class MatchParticipant(models.Model):
     score = models.PositiveIntegerField(default=0)
     hearts = models.PositiveSmallIntegerField(default=3)
     is_ready = models.BooleanField(default=False)
+    rematch_requested = models.BooleanField(default=False)
+    closed_at = models.DateTimeField(null=True, blank=True)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
