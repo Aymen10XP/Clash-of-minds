@@ -1,5 +1,6 @@
 import json
 import random
+import uuid
 from datetime import timedelta
 from json import JSONDecodeError
 
@@ -7,7 +8,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from .models import AnswerChoice, Question, Topic, TopScoreResponse, TopScoreRun
 
@@ -43,8 +44,128 @@ def _question_payload(question):
     }
 
 
+def _offline_question_payload(question):
+    payload = _question_payload(question)
+    payload['correctChoiceId'] = question.choices.get(is_correct=True).pk
+    return payload
+
+
 def _best_score(user):
     return TopScoreRun.objects.filter(user=user).aggregate(best=Max('score'))['best'] or 0
+
+
+@require_GET
+def offline_catalog(request):
+    """Return the authenticated player's question pack for local practice."""
+    if not request.user.is_authenticated:
+        return _unauthenticated()
+
+    questions = Question.objects.filter(
+        is_active=True,
+        topic__is_active=True,
+    ).select_related('topic').prefetch_related('choices')
+    return JsonResponse({
+        'version': max(
+            (question.updated_at.isoformat() for question in questions),
+            default='empty',
+        ),
+        'timeLimitMs': ROUND_TIME_MS,
+        'bestScore': _best_score(request.user),
+        'questions': [_offline_question_payload(question) for question in questions],
+    })
+
+
+def _parse_offline_answer(raw_answer, sequence):
+    if not isinstance(raw_answer, dict):
+        raise ValueError('Each answer must be an object.')
+    question_id = int(raw_answer.get('questionId'))
+    choice_id = raw_answer.get('choiceId')
+    choice_id = None if choice_id is None else int(choice_id)
+    response_time_ms = int(raw_answer.get('responseTimeMs', 0))
+    if not 0 <= response_time_ms <= ROUND_TIME_MS:
+        raise ValueError('responseTimeMs is outside the allowed range.')
+
+    question = Question.objects.select_related('topic').get(pk=question_id)
+    choice = None
+    if choice_id is not None:
+        choice = AnswerChoice.objects.get(pk=choice_id, question=question)
+    return question, choice, response_time_ms, sequence
+
+
+@require_POST
+@transaction.atomic
+def sync_offline_runs(request):
+    """Idempotently import locally completed runs and verify their score server-side."""
+    if not request.user.is_authenticated:
+        return _unauthenticated()
+
+    data = _read_json(request)
+    runs = data.get('runs') if data is not None else None
+    if not isinstance(runs, list) or len(runs) > 100:
+        return JsonResponse({'error': 'runs must be an array containing at most 100 items.'}, status=400)
+
+    synced_ids = []
+    for raw_run in runs:
+        if not isinstance(raw_run, dict):
+            return JsonResponse({'error': 'Each run must be an object.'}, status=400)
+        try:
+            client_run_id = uuid.UUID(str(raw_run['runId']))
+            existing = TopScoreRun.objects.filter(client_run_id=client_run_id).first()
+            if existing is not None:
+                if existing.user_id != request.user.pk:
+                    return JsonResponse({'error': 'A run identifier belongs to another player.'}, status=409)
+                synced_ids.append(str(existing.client_run_id))
+                continue
+
+            raw_answers = raw_run.get('answers', [])
+            if not isinstance(raw_answers, list) or not raw_answers:
+                raise ValueError('A completed run must contain at least one answer.')
+            parsed_answers = [
+                _parse_offline_answer(answer, index)
+                for index, answer in enumerate(raw_answers, start=1)
+            ]
+            topic_slug = raw_run.get('topicSlug')
+            topic = Topic.objects.get(slug=topic_slug) if topic_slug else None
+            if topic and any(question.topic_id != topic.pk for question, *_ in parsed_answers):
+                raise ValueError('An answer does not belong to the selected topic.')
+
+            run = TopScoreRun.objects.create(
+                client_run_id=client_run_id,
+                user=request.user,
+                topic=topic,
+            )
+            score = 0
+            terminal_reason = TopScoreRun.EndReason.QUIT
+            for question, choice, response_time_ms, sequence in parsed_answers:
+                response = TopScoreResponse.objects.create(
+                    run=run,
+                    question=question,
+                    selected_choice=choice,
+                    sequence=sequence,
+                    response_time_ms=response_time_ms,
+                )
+                if not response.is_correct:
+                    terminal_reason = (
+                        TopScoreRun.EndReason.TIMEOUT
+                        if choice is None else TopScoreRun.EndReason.WRONG_ANSWER
+                    )
+                    break
+                score += 1
+
+            run.score = score
+            run.status = TopScoreRun.Status.FINISHED
+            run.end_reason = terminal_reason
+            run.ended_at = timezone.now()
+            run.save()
+            synced_ids.append(str(run.client_run_id))
+        except (KeyError, TypeError, ValueError, Topic.DoesNotExist,
+                Question.DoesNotExist, AnswerChoice.DoesNotExist):
+            return JsonResponse({'error': 'An offline run contains invalid data.'}, status=400)
+
+    return JsonResponse({
+        'syncedRunIds': synced_ids,
+        'bestScore': _best_score(request.user),
+    })
 
 
 def _next_question(run):

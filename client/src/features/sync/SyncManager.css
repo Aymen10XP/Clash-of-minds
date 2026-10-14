@@ -1,0 +1,40 @@
+.sync-modal {
+  --width: min(90vw, 420px);
+  --height: auto;
+  --border-radius: 22px;
+}
+
+.sync-modal__content {
+  min-height: 280px;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.sync-modal__content ion-spinner {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 8px;
+  color: var(--ion-color-primary);
+}
+
+.sync-modal__content h2,
+.sync-modal__content p {
+  margin: 0;
+}
+
+.sync-modal__eyebrow {
+  color: var(--ion-color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sync-modal__content > p:last-of-type {
+  margin: 4px 0 14px;
+  color: var(--ion-color-medium);
+  line-height: 1.55;
+}

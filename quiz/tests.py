@@ -298,3 +298,41 @@ class TopScoreApiTests(TestCase):
 
         self.assertTrue(response.json()['timedOut'])
         self.assertLessEqual(TopScoreResponse.objects.get().response_time_ms, 10_000)
+
+    def test_offline_catalog_requires_authentication_and_contains_answer_key(self):
+        anonymous = self.client.get('/api/quiz/offline/catalog/')
+        self.assertEqual(anonymous.status_code, 401)
+
+        self.client.force_login(self.user)
+        response = self.client.get('/api/quiz/offline/catalog/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['questions']), 30)
+        self.assertIn('correctChoiceId', response.json()['questions'][0])
+
+    def test_offline_run_sync_is_idempotent_and_recomputes_score(self):
+        self.client.force_login(self.user)
+        questions = list(Question.objects.filter(is_active=True)[:2])
+        correct = questions[0].choices.get(is_correct=True)
+        wrong = questions[1].choices.filter(is_correct=False).first()
+        run_id = '6c7b96e7-1c6a-49dd-9bd9-482f7ee2663e'
+        body = {
+            'runs': [{
+                'runId': run_id,
+                'startedAt': '2026-10-14T12:00:00.000Z',
+                'endedAt': '2026-10-14T12:00:08.000Z',
+                'score': 999,
+                'answers': [
+                    {'questionId': questions[0].pk, 'choiceId': correct.pk, 'responseTimeMs': 1200},
+                    {'questionId': questions[1].pk, 'choiceId': wrong.pk, 'responseTimeMs': 1700},
+                ],
+            }],
+        }
+
+        first = self.post_json('/api/quiz/offline/sync/', body)
+        second = self.post_json('/api/quiz/offline/sync/', body)
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(TopScoreRun.objects.get(client_run_id=run_id).score, 1)
+        self.assertEqual(TopScoreRun.objects.filter(client_run_id=run_id).count(), 1)
