@@ -14,8 +14,22 @@ export type MatchInvitation = {
 export type MatchParticipant = MultiplayerPlayer & {
   seat: 'host' | 'guest';
   score: number;
+  hearts: number;
   ready: boolean;
   isCurrentUser: boolean;
+};
+
+export type MatchRound = {
+  sequence: number;
+  question: {
+    id: number;
+    topic: { slug: string; title: string };
+    prompt: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    choices: Array<{ id: number; text: string }>;
+  };
+  hasAnswered: boolean;
+  selectedChoiceId: number | null;
 };
 
 export type KnowledgeMatch = {
@@ -23,7 +37,18 @@ export type KnowledgeMatch = {
   status: 'waiting' | 'active' | 'completed' | 'cancelled';
   createdAt: string;
   startedAt: string | null;
+  endedAt: string | null;
+  endReason: 'hearts' | 'time' | null;
+  winnerId: number | null;
+  durationMs: number;
+  remainingMs: number;
   participants: MatchParticipant[];
+  currentRound: MatchRound | null;
+  lastRound: {
+    sequence: number;
+    winnerId: number | null;
+    correctChoiceId: number;
+  } | null;
 };
 
 export class MultiplayerApiError extends Error {
@@ -104,4 +129,8 @@ export const fetchMatch = async (matchId: string) => (
 
 export const markMatchReady = async (matchId: string) => (
   post<{ match: KnowledgeMatch }>(`matches/${matchId}/ready/`)
+).then((payload) => payload.match);
+
+export const submitMatchAnswer = async (matchId: string, questionId: number, choiceId: number) => (
+  post<{ match: KnowledgeMatch }>(`matches/${matchId}/answer/`, { questionId, choiceId })
 ).then((payload) => payload.match);

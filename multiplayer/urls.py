@@ -9,6 +9,7 @@ from .views import (
     search_players,
     send_invitation,
     set_match_ready,
+    submit_match_answer,
 )
 
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path('matches/', match_list, name='multiplayer-match-list'),
     path('matches/<uuid:match_id>/', match_detail, name='multiplayer-match-detail'),
     path('matches/<uuid:match_id>/ready/', set_match_ready, name='multiplayer-match-ready'),
+    path('matches/<uuid:match_id>/answer/', submit_match_answer, name='multiplayer-match-answer'),
 ]
