@@ -7,6 +7,15 @@ import FriendlyMatch from './friendly/FriendlyMatch';
 import RankedMatchmaking from './ranked/RankedMatchmaking';
 import { appRoutes } from '../../routing/routes';
 
+vi.mock('../../features/multiplayer/api', () => ({
+  fetchInvitations: vi.fn(() => new Promise(() => undefined)),
+  fetchMatches: vi.fn(() => new Promise(() => undefined)),
+  searchMultiplayerPlayers: vi.fn(),
+  sendMatchInvitation: vi.fn(),
+  respondToMatchInvitation: vi.fn(),
+  cancelMatchInvitation: vi.fn(),
+}));
+
 const renderFlow = () =>
   render(
     <TestIonRouter initialEntry={appRoutes.multiplayer}>
@@ -46,7 +55,7 @@ test('returns from a multiplayer destination with backward navigation', () => {
   expect(screen.getByRole('button', { name: /ranked matchmaking/i })).toBeDefined();
 });
 
-test('opens the friendly match placeholder', () => {
+test('opens the friendly match lobby foundation', () => {
   vi.useFakeTimers();
   renderFlow();
 
@@ -54,5 +63,8 @@ test('opens the friendly match placeholder', () => {
   act(() => vi.advanceTimersByTime(360));
 
   expect(screen.getByRole('heading', { name: 'Friendly Match' })).toBeDefined();
+  expect(screen.getByRole('heading', { name: 'Find a player' })).toBeDefined();
+  expect(screen.getByRole('heading', { name: 'Invitations' })).toBeDefined();
+  expect(screen.getByRole('heading', { name: 'Battle rooms' })).toBeDefined();
   expect(screen.queryByRole('button', { name: /friendly match/i })).toBeNull();
 });

@@ -7,6 +7,7 @@ import Register from '../pages/register/Register';
 import Home from '../pages/home/Home';
 import Multiplayer from '../pages/multiplayer/Multiplayer';
 import FriendlyMatch from '../pages/multiplayer/friendly/FriendlyMatch';
+import MatchRoom from '../pages/multiplayer/match/MatchRoom';
 import RankedMatchmaking from '../pages/multiplayer/ranked/RankedMatchmaking';
 import Practice from '../pages/practice/Practice';
 import PracticeTopScore from '../pages/practice/top-score/PracticeTopScore';
@@ -29,6 +30,7 @@ const GameRouter: React.FC = () => (
       <Route path={appRoutes.multiplayer} element={<RequireAuth><Multiplayer /></RequireAuth>} />
       <Route path={appRoutes.multiplayerRanked} element={<RequireAuth><RankedMatchmaking /></RequireAuth>} />
       <Route path={appRoutes.multiplayerFriendly} element={<RequireAuth><FriendlyMatch /></RequireAuth>} />
+      <Route path={appRoutes.multiplayerMatch} element={<RequireAuth><MatchRoom /></RequireAuth>} />
       <Route path={appRoutes.settings} element={<RequireAuth><Settings /></RequireAuth>} />
       <Route path={appRoutes.root} element={<Navigate to={appRoutes.home} replace />} />
       <Route path="*" element={<Navigate to={appRoutes.home} replace />} />
