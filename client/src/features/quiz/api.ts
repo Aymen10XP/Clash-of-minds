@@ -1,3 +1,10 @@
+import {
+  answerOfflineTopScore,
+  hasOfflineRun,
+  quitOfflineTopScore,
+  startOfflineTopScore,
+} from './offline';
+
 export type QuizChoice = { id: number; text: string };
 
 export type QuizQuestion = {
@@ -28,9 +35,12 @@ export type TopScoreAnswer = {
 };
 
 export class QuizApiError extends Error {
-  constructor(message: string) {
+  readonly status?: number;
+
+  constructor(message: string, status?: number) {
     super(message);
     this.name = 'QuizApiError';
+    this.status = status;
   }
 }
 
@@ -63,21 +73,34 @@ const post = async <T>(path: string, body: object = {}): Promise<T> => {
     body: JSON.stringify(body),
   });
   const payload = (await response.json().catch(() => ({}))) as T & { error?: string };
-  if (!response.ok) throw new QuizApiError(payload.error ?? 'The game server did not respond.');
+  if (!response.ok) throw new QuizApiError(payload.error ?? 'The game server did not respond.', response.status);
   return payload;
 };
 
-export const startTopScore = (topicSlug?: string) => post<TopScoreStart>(
-  'top-score/start/',
-  topicSlug ? { topicSlug } : {},
-);
+export const startTopScore = async (topicSlug?: string) => {
+  if (navigator.onLine === false) return startOfflineTopScore(topicSlug);
+  try {
+    return await post<TopScoreStart>('top-score/start/', topicSlug ? { topicSlug } : {});
+  } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    return startOfflineTopScore(topicSlug);
+  }
+};
 
 export const answerTopScore = (
   runId: string,
   questionId: number,
   choiceId: number | null,
-) => post<TopScoreAnswer>(`top-score/${runId}/answer/`, { questionId, choiceId });
+) => (
+  hasOfflineRun(runId)
+    ? Promise.resolve(answerOfflineTopScore(runId, questionId, choiceId))
+    : post<TopScoreAnswer>(`top-score/${runId}/answer/`, { questionId, choiceId })
+);
 
 export const quitTopScore = async (runId: string) => {
+  if (hasOfflineRun(runId)) {
+    quitOfflineTopScore(runId);
+    return;
+  }
   await post<{ message: string }>(`top-score/${runId}/quit/`);
 };

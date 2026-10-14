@@ -58,7 +58,7 @@ const Login: React.FC = () => {
       />
 
       <IonRow className="auth-form-options ion-align-items-center ion-justify-content-between">
-        <IonCheckbox className="auth-checkbox" name="rememberMe" labelPlacement="end">
+        <IonCheckbox className="auth-checkbox" name="rememberMe" labelPlacement="end" defaultChecked>
           Keep me signed in
         </IonCheckbox>
       </IonRow>

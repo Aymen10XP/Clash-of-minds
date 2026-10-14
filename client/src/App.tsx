@@ -1,6 +1,7 @@
 import { IonApp, setupIonicReact } from '@ionic/react';
 import { AuthProvider } from './features/auth/AuthContext';
 import GameRouter from './routing/GameRouter';
+import SyncManager from './features/sync/SyncManager';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -37,6 +38,7 @@ setupIonicReact();
 const App: React.FC = () => (
   <IonApp>
     <AuthProvider>
+      <SyncManager />
       <GameRouter />
     </AuthProvider>
   </IonApp>
