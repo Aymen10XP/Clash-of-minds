@@ -12,6 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import ProfileUpdateForm, RegistrationForm
+from quiz.models import Topic
 
 
 PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
@@ -41,6 +42,7 @@ def _user_payload(user):
         'email': user.email,
         'country': user.country,
         'profilePhoto': user.profile_photo.url if user.profile_photo else None,
+        'favoriteTopic': user.favorite_topic.slug if user.favorite_topic_id else None,
     }
 
 
@@ -117,7 +119,20 @@ def update_profile_view(request):
     if photo_error:
         return JsonResponse({'errors': {'profilePhoto': [photo_error]}}, status=400)
 
+    favorite_topic = request.user.favorite_topic
+    if 'favoriteTopic' in data:
+        favorite_topic_slug = data.get('favoriteTopic')
+        favorite_topic = None
+        if favorite_topic_slug:
+            if not isinstance(favorite_topic_slug, str):
+                return JsonResponse({'errors': {'favoriteTopic': ['Choose a valid topic.']}}, status=400)
+            try:
+                favorite_topic = Topic.objects.get(slug=favorite_topic_slug, is_active=True)
+            except Topic.DoesNotExist:
+                return JsonResponse({'errors': {'favoriteTopic': ['Choose a valid topic.']}}, status=400)
     user = form.save()
+    user.favorite_topic = favorite_topic
+    user.save(update_fields=('favorite_topic',))
     previous_photo = user.profile_photo.name if user.profile_photo else ''
     if photo_file:
         user.profile_photo.save(photo_file.name, photo_file, save=True)
@@ -127,6 +142,33 @@ def update_profile_view(request):
         user.profile_photo.delete(save=True)
 
     return JsonResponse({'user': _user_payload(user)})
+
+
+@require_GET
+def favorite_topic_players_view(request, topic_slug):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Sign in to view players.'}, status=401)
+    try:
+        topic = Topic.objects.get(slug=topic_slug, is_active=True)
+    except Topic.DoesNotExist:
+        return JsonResponse({'error': 'The selected topic is not available.'}, status=404)
+
+    players = get_user_model().objects.filter(
+        favorite_topic=topic,
+        is_active=True,
+    ).exclude(pk=request.user.pk).order_by('username')
+    return JsonResponse({
+        'topic': {'slug': topic.slug, 'title': topic.title},
+        'players': [
+            {
+                'id': player.pk,
+                'username': player.username,
+                'country': player.country,
+                'profilePhoto': player.profile_photo.url if player.profile_photo else None,
+            }
+            for player in players[:50]
+        ],
+    })
 
 
 @require_POST

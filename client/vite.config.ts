@@ -12,7 +12,7 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-      '/media': {
+      '/media/profile_photos': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },

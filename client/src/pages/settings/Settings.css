@@ -121,6 +121,82 @@
   box-shadow: 0 0 0 2px rgba(242, 201, 76, 0.12);
 }
 
+.settings-profile__topic-select {
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.settings-topic-players {
+  margin-top: -3px;
+}
+
+.settings-topic-players__message {
+  margin: 0;
+  color: var(--game-color-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.settings-topic-players__message--error {
+  color: #ffe1e1;
+}
+
+.settings-topic-players__list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.settings-topic-players__list h3 {
+  margin: 2px 0 3px;
+  color: #d4def0;
+  font-size: 0.78rem;
+}
+
+.settings-topic-player {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(125, 159, 216, 0.22);
+  border-radius: var(--game-radius-control);
+  background: rgba(2, 11, 29, 0.45);
+}
+
+.settings-topic-player img,
+.settings-topic-player__avatar {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(242, 201, 76, 0.45);
+  border-radius: 50%;
+  color: var(--game-color-accent);
+  background: rgba(2, 11, 29, 0.8);
+  font-size: 0.82rem;
+  font-weight: 800;
+  object-fit: cover;
+}
+
+.settings-topic-player__name {
+  flex: 1;
+  overflow: hidden;
+  color: #e2eaf7;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-topic-player__country {
+  color: #9cafce;
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
 .settings-profile__save {
   --background: var(--game-color-accent);
   --background-hover: #f5d467;
