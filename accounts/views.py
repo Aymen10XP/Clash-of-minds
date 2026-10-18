@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms import RegistrationForm
+from .forms import ProfileUpdateForm, RegistrationForm
 
 
 PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
@@ -44,6 +44,30 @@ def _user_payload(user):
     }
 
 
+def _profile_photo_file(photo_data):
+    if not photo_data:
+        return None, None
+    match = PROFILE_PHOTO_DATA_URL.fullmatch(str(photo_data))
+    if not match:
+        return None, 'Choose a JPEG, PNG, or WebP image.'
+    try:
+        photo_bytes = base64.b64decode(match.group(2), validate=True)
+    except (binascii.Error, ValueError):
+        return None, 'The selected image could not be read.'
+    if not photo_bytes or len(photo_bytes) > PROFILE_PHOTO_MAX_BYTES:
+        return None, 'Profile photos may be up to 5 MB.'
+    image_type = match.group(1)
+    valid_signature = (
+        (image_type == 'image/jpeg' and photo_bytes.startswith(b'\xff\xd8\xff'))
+        or (image_type == 'image/png' and photo_bytes.startswith(b'\x89PNG\r\n\x1a\n'))
+        or (image_type == 'image/webp' and photo_bytes.startswith(b'RIFF') and photo_bytes[8:12] == b'WEBP')
+    )
+    if not valid_signature:
+        return None, 'The selected file is not a valid supported image.'
+    extension = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}[image_type]
+    return ContentFile(photo_bytes, name=f'profile-photo.{extension}'), None
+
+
 @require_POST
 def register_view(request):
     data = _read_json(request)
@@ -61,28 +85,9 @@ def register_view(request):
     if not form.is_valid():
         return JsonResponse({'errors': _form_errors(form)}, status=400)
 
-    photo_data = data.get('profilePhoto')
-    photo_file = None
-    if photo_data:
-        match = PROFILE_PHOTO_DATA_URL.fullmatch(str(photo_data))
-        if not match:
-            return JsonResponse({'errors': {'profilePhoto': ['Choose a JPEG, PNG, or WebP image.']}}, status=400)
-        try:
-            photo_bytes = base64.b64decode(match.group(2), validate=True)
-        except (binascii.Error, ValueError):
-            return JsonResponse({'errors': {'profilePhoto': ['The selected image could not be read.']}}, status=400)
-        if not photo_bytes or len(photo_bytes) > PROFILE_PHOTO_MAX_BYTES:
-            return JsonResponse({'errors': {'profilePhoto': ['Profile photos may be up to 5 MB.']}}, status=400)
-        image_type = match.group(1)
-        valid_signature = (
-            (image_type == 'image/jpeg' and photo_bytes.startswith(b'\xff\xd8\xff'))
-            or (image_type == 'image/png' and photo_bytes.startswith(b'\x89PNG\r\n\x1a\n'))
-            or (image_type == 'image/webp' and photo_bytes.startswith(b'RIFF') and photo_bytes[8:12] == b'WEBP')
-        )
-        if not valid_signature:
-            return JsonResponse({'errors': {'profilePhoto': ['The selected file is not a valid supported image.']}}, status=400)
-        extension = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}[image_type]
-        photo_file = ContentFile(photo_bytes, name=f'profile-photo.{extension}')
+    photo_file, photo_error = _profile_photo_file(data.get('profilePhoto'))
+    if photo_error:
+        return JsonResponse({'errors': {'profilePhoto': [photo_error]}}, status=400)
 
     try:
         user = form.save()
@@ -94,6 +99,34 @@ def register_view(request):
             status=400,
         )
     return JsonResponse({'user': _user_payload(user)}, status=201)
+
+
+@require_POST
+def update_profile_view(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Sign in to edit your profile.'}, status=401)
+    data = _read_json(request)
+    if data is None:
+        return JsonResponse({'error': 'Request body must contain a JSON object.'}, status=400)
+
+    form = ProfileUpdateForm({'username': data.get('username', '')}, instance=request.user)
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status=400)
+
+    photo_file, photo_error = _profile_photo_file(data.get('profilePhoto'))
+    if photo_error:
+        return JsonResponse({'errors': {'profilePhoto': [photo_error]}}, status=400)
+
+    user = form.save()
+    previous_photo = user.profile_photo.name if user.profile_photo else ''
+    if photo_file:
+        user.profile_photo.save(photo_file.name, photo_file, save=True)
+        if previous_photo:
+            user.profile_photo.storage.delete(previous_photo)
+    elif data.get('removeProfilePhoto') and previous_photo:
+        user.profile_photo.delete(save=True)
+
+    return JsonResponse({'user': _user_payload(user)})
 
 
 @require_POST

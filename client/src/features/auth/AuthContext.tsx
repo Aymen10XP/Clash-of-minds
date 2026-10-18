@@ -9,6 +9,7 @@ import {
   loginAccount,
   logoutAccount,
   registerAccount,
+  updateAccountProfile,
 } from './api';
 import { AuthContext, type AuthContextValue, type AuthStatus } from './context';
 import type { AuthUser } from './api';
@@ -47,6 +48,11 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
       user,
       register: async (data) => {
         await registerAccount(data);
+      },
+      updateProfile: async (data) => {
+        const response = await updateAccountProfile(data);
+        cacheUser(response.user);
+        setUser(response.user);
       },
       login: async (data) => {
         const response = await loginAccount(data);

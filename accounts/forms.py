@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
+from django import forms
 
 
 class RegistrationForm(UserCreationForm):
@@ -19,3 +20,11 @@ class RegistrationForm(UserCreationForm):
 
     def clean_country(self):
         return self.cleaned_data['country'].upper()
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    username = forms.CharField(min_length=3, max_length=150)
+
+    class Meta:
+        model = get_user_model()
+        fields = ('username',)

@@ -15,6 +15,12 @@ export type RegistrationData = {
   profilePhoto?: string;
 };
 
+export type ProfileUpdateData = {
+  username: string;
+  profilePhoto?: string;
+  removeProfilePhoto?: boolean;
+};
+
 export type LoginData = {
   identity: string;
   password: string;
@@ -105,6 +111,13 @@ export const fetchCurrentUser = async () => {
 
 export const registerAccount = async (data: RegistrationData) => {
   return request<{ user: AuthUser }>('register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const updateAccountProfile = async (data: ProfileUpdateData) => {
+  return request<{ user: AuthUser }>('profile', {
     method: 'POST',
     body: JSON.stringify(data),
   });
