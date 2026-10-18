@@ -18,6 +18,7 @@ class User(AbstractUser):
         validators=[country_code_validator],
         help_text='Two-letter ISO 3166-1 country code, for example TN or US.',
     )
+    profile_photo = models.FileField(upload_to='profile_photos/', blank=True)
 
     REQUIRED_FIELDS = ['email', 'country']
 

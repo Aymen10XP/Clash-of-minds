@@ -6,6 +6,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import AuthInput from '../../components/auth/AuthInput';
 import AuthPage from '../../components/auth/AuthPage';
+import ProfilePhotoInput from '../../components/auth/ProfilePhotoInput';
 import CountryCombobox from '../../components/auth/CountryCombobox';
 import { useAuth } from '../../features/auth/context';
 import { appRoutes } from '../../routing/routes';
@@ -16,12 +17,22 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (formData: FormData) => {
+    const selectedPhoto = formData.get('profilePhoto');
+    const profilePhoto = selectedPhoto instanceof File && selectedPhoto.size > 0
+      ? await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error('Unable to read the selected photo.'));
+        reader.readAsDataURL(selectedPhoto);
+      })
+      : undefined;
     await register({
       username: String(formData.get('username') ?? ''),
       email: String(formData.get('email') ?? ''),
       country: String(formData.get('country') ?? ''),
       password: String(formData.get('password') ?? ''),
       confirmPassword: String(formData.get('confirmPassword') ?? ''),
+      profilePhoto,
     });
     navigate(appRoutes.login, {
       replace: true,
@@ -62,6 +73,8 @@ const Register: React.FC = () => {
     />
 
     <CountryCombobox />
+
+    <ProfilePhotoInput />
 
     <AuthInput
       icon={lockClosedOutline}

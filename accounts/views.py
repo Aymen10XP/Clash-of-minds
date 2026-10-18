@@ -1,13 +1,21 @@
 import json
+import base64
+import binascii
+import re
 from json import JSONDecodeError
 
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.core.files.base import ContentFile
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import RegistrationForm
+
+
+PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024
+PROFILE_PHOTO_DATA_URL = re.compile(r'^data:(image/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$')
 
 
 def _read_json(request):
@@ -32,6 +40,7 @@ def _user_payload(user):
         'username': user.username,
         'email': user.email,
         'country': user.country,
+        'profilePhoto': user.profile_photo.url if user.profile_photo else None,
     }
 
 
@@ -52,8 +61,33 @@ def register_view(request):
     if not form.is_valid():
         return JsonResponse({'errors': _form_errors(form)}, status=400)
 
+    photo_data = data.get('profilePhoto')
+    photo_file = None
+    if photo_data:
+        match = PROFILE_PHOTO_DATA_URL.fullmatch(str(photo_data))
+        if not match:
+            return JsonResponse({'errors': {'profilePhoto': ['Choose a JPEG, PNG, or WebP image.']}}, status=400)
+        try:
+            photo_bytes = base64.b64decode(match.group(2), validate=True)
+        except (binascii.Error, ValueError):
+            return JsonResponse({'errors': {'profilePhoto': ['The selected image could not be read.']}}, status=400)
+        if not photo_bytes or len(photo_bytes) > PROFILE_PHOTO_MAX_BYTES:
+            return JsonResponse({'errors': {'profilePhoto': ['Profile photos may be up to 5 MB.']}}, status=400)
+        image_type = match.group(1)
+        valid_signature = (
+            (image_type == 'image/jpeg' and photo_bytes.startswith(b'\xff\xd8\xff'))
+            or (image_type == 'image/png' and photo_bytes.startswith(b'\x89PNG\r\n\x1a\n'))
+            or (image_type == 'image/webp' and photo_bytes.startswith(b'RIFF') and photo_bytes[8:12] == b'WEBP')
+        )
+        if not valid_signature:
+            return JsonResponse({'errors': {'profilePhoto': ['The selected file is not a valid supported image.']}}, status=400)
+        extension = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp'}[image_type]
+        photo_file = ContentFile(photo_bytes, name=f'profile-photo.{extension}')
+
     try:
         user = form.save()
+        if photo_file:
+            user.profile_photo.save(photo_file.name, photo_file, save=True)
     except IntegrityError:
         return JsonResponse(
             {'errors': {'email': ['An account with this email already exists.']}},

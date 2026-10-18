@@ -1,0 +1,69 @@
+.profile-photo-field {
+  min-width: 0;
+}
+
+.profile-photo-field__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.profile-photo-field__prompt,
+.profile-photo-field__selected {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px dashed rgba(125, 159, 216, 0.5);
+  border-radius: var(--game-radius-control);
+  color: #d4def0;
+  background: rgba(2, 11, 29, 0.48);
+  cursor: pointer;
+}
+
+.profile-photo-field__prompt > ion-icon {
+  color: var(--game-color-accent);
+  font-size: 1.3rem;
+}
+
+.profile-photo-field__prompt span {
+  display: grid;
+  gap: 4px;
+}
+
+.profile-photo-field__prompt strong {
+  font-size: 0.8rem;
+}
+
+.profile-photo-field__prompt small {
+  color: #9cafce;
+  font-size: 0.7rem;
+}
+
+.profile-photo-field__selected img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-photo-field__selected span {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+.profile-photo-field__selected ion-button {
+  --color: #d4def0;
+  margin: 0;
+}
+
+.profile-photo-field__input:focus-visible + .profile-photo-field__prompt {
+  outline: 2px solid var(--game-color-accent);
+  outline-offset: 2px;
+}

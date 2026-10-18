@@ -16,6 +16,7 @@ beforeEach(() => {
         username: 'historian',
         email: 'historian@example.com',
         country: 'TN',
+        profilePhoto: null,
       },
     }),
   });

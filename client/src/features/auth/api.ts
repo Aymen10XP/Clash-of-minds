@@ -3,6 +3,7 @@ export type AuthUser = {
   username: string;
   email: string;
   country: string;
+  profilePhoto?: string | null;
 };
 
 export type RegistrationData = {
@@ -11,6 +12,7 @@ export type RegistrationData = {
   country: string;
   password: string;
   confirmPassword: string;
+  profilePhoto?: string;
 };
 
 export type LoginData = {

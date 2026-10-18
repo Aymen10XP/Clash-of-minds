@@ -27,6 +27,7 @@ test('bootstraps a missing CSRF cookie before login', async () => {
         username: 'historian',
         email: 'historian@example.com',
         country: 'TN',
+        profilePhoto: null,
       },
     }),
   });
