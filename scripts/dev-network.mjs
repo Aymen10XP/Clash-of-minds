@@ -28,14 +28,27 @@ const trustedOrigins = allowedHosts.flatMap((host) => [
   `http://${host}:5173`,
   `http://${host}:8000`,
 ]);
+const djangoEnvironment = {
+  ...process.env,
+  DJANGO_ALLOWED_HOSTS: allowedHosts.join(','),
+  DJANGO_CSRF_TRUSTED_ORIGINS: trustedOrigins.join(','),
+};
+
+console.log('Applying pending database migrations...');
+const migration = spawnSync(python, ['manage.py', 'migrate', '--noinput'], {
+  cwd: repositoryRoot,
+  env: djangoEnvironment,
+  stdio: 'inherit',
+});
+
+if (migration.status !== 0) {
+  console.error('Unable to apply database migrations. Network mode was not started.');
+  process.exit(migration.status ?? 1);
+}
 
 const django = spawn(python, ['manage.py', 'runserver', '0.0.0.0:8000'], {
   cwd: repositoryRoot,
-  env: {
-    ...process.env,
-    DJANGO_ALLOWED_HOSTS: allowedHosts.join(','),
-    DJANGO_CSRF_TRUSTED_ORIGINS: trustedOrigins.join(','),
-  },
+  env: djangoEnvironment,
   stdio: 'inherit',
 });
 
