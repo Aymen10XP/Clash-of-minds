@@ -3,6 +3,8 @@ export type AuthUser = {
   username: string;
   email: string;
   country: string;
+  profilePhoto?: string | null;
+  favoriteTopic?: string | null;
 };
 
 export type RegistrationData = {
@@ -11,6 +13,21 @@ export type RegistrationData = {
   country: string;
   password: string;
   confirmPassword: string;
+  profilePhoto?: string;
+};
+
+export type ProfileUpdateData = {
+  username: string;
+  profilePhoto?: string;
+  removeProfilePhoto?: boolean;
+  favoriteTopic?: string;
+};
+
+export type TopicPlayer = {
+  id: number;
+  username: string;
+  country: string;
+  profilePhoto: string | null;
 };
 
 export type LoginData = {
@@ -106,6 +123,19 @@ export const registerAccount = async (data: RegistrationData) => {
     method: 'POST',
     body: JSON.stringify(data),
   });
+};
+
+export const updateAccountProfile = async (data: ProfileUpdateData) => {
+  return request<{ user: AuthUser }>('profile', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const fetchFavoriteTopicPlayers = async (topicSlug: string) => {
+  return request<{ topic: { slug: string; title: string }; players: TopicPlayer[] }>(
+    `favorite-topic/${encodeURIComponent(topicSlug)}/players`,
+  );
 };
 
 export const loginAccount = async (data: LoginData) => {
