@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { IonButton, IonIcon } from '@ionic/react';
-import { cameraOutline, closeCircleOutline } from 'ionicons/icons';
+import { cameraOutline, closeCircleOutline, imagesOutline } from 'ionicons/icons';
 import GameSubpage from '../../components/game/GameSubpage';
 import { useAuth } from '../../features/auth/context';
 import { fetchPreferenceMatches, type PreferenceMatch } from '../../features/auth/api';
+import { chooseProfilePhoto, isPhotoSelectionCancelled, takeProfilePhoto } from '../../features/profile/camera';
 import { practiceTopics } from '../../features/practice/topics';
 import { usePressNavigation } from '../../hooks/usePressNavigation';
 import { appRoutes } from '../../routing/routes';
@@ -17,7 +18,8 @@ const Settings: React.FC = () => {
   const [matches, setMatches] = useState<PreferenceMatch[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [playersError, setPlayersError] = useState('');
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState('');
+  const [photoAction, setPhotoAction] = useState<'camera' | 'gallery' | null>(null);
   const [photoPreview, setPhotoPreview] = useState(user?.profilePhoto ?? '');
   const [photoFailed, setPhotoFailed] = useState(false);
   const [removePhoto, setRemovePhoto] = useState(false);
@@ -58,23 +60,26 @@ const Settings: React.FC = () => {
 
   useEffect(() => setPhotoFailed(false), [photoPreview]);
 
-  useEffect(() => () => {
-    if (photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
-  }, [photoPreview]);
-
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.currentTarget.files?.[0] ?? null;
-    setSelectedPhoto(file);
-    setPhotoPreview(file ? URL.createObjectURL(file) : (user?.profilePhoto ?? ''));
-    setRemovePhoto(false);
+  const handlePhotoSelection = async (source: 'camera' | 'gallery') => {
+    setPhotoAction(source);
     setError('');
     setSaved(false);
+    try {
+      const photo = source === 'camera' ? await takeProfilePhoto() : await chooseProfilePhoto();
+      setSelectedPhoto(photo);
+      setPhotoPreview(photo);
+      setRemovePhoto(false);
+    } catch (selectionError) {
+      if (!isPhotoSelectionCancelled(selectionError)) {
+        setError(selectionError instanceof Error ? selectionError.message : 'Unable to select a photo.');
+      }
+    } finally {
+      setPhotoAction(null);
+    }
   };
 
   const handleRemovePhoto = () => {
-    const input = document.getElementById('settings-profile-photo') as HTMLInputElement | null;
-    if (input) input.value = '';
-    setSelectedPhoto(null);
+    setSelectedPhoto('');
     setPhotoPreview('');
     setRemovePhoto(Boolean(user?.profilePhoto));
   };
@@ -85,16 +90,9 @@ const Settings: React.FC = () => {
     setSaved(false);
     setSaving(true);
     try {
-      const profilePhoto = selectedPhoto
-        ? await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(new Error('Unable to read the selected photo.'));
-          reader.readAsDataURL(selectedPhoto);
-        })
-        : undefined;
+      const profilePhoto = selectedPhoto || undefined;
       await updateProfile({ username: username.trim(), profilePhoto, removeProfilePhoto: removePhoto, favoriteTopics });
-      setSelectedPhoto(null);
+      setSelectedPhoto('');
       setRemovePhoto(false);
       setSaved(true);
     } catch (submitError) {
@@ -128,19 +126,14 @@ const Settings: React.FC = () => {
               </div>
             )}
             <div className="settings-profile__photo-actions">
-              <input
-                id="settings-profile-photo"
-                className="settings-profile__file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                capture="user"
-                onChange={handlePhotoChange}
-                aria-label="Choose a profile photo"
-              />
-              <label className="settings-profile__choose" htmlFor="settings-profile-photo">
+              <IonButton className="settings-profile__choose" fill="clear" type="button" disabled={photoAction !== null} onClick={() => void handlePhotoSelection('gallery')}>
+                <IonIcon icon={imagesOutline} aria-hidden="true" />
+                <span>{photoAction === 'gallery' ? 'Opening photos...' : 'Upload from device'}</span>
+              </IonButton>
+              <IonButton className="settings-profile__choose" fill="clear" type="button" disabled={photoAction !== null} onClick={() => void handlePhotoSelection('camera')}>
                 <IonIcon icon={cameraOutline} aria-hidden="true" />
-                <span>{photoPreview ? 'Change photo' : 'Take or choose a photo'}</span>
-              </label>
+                <span>{photoAction === 'camera' ? 'Opening camera...' : 'Take a photo'}</span>
+              </IonButton>
               {photoPreview && (
                 <IonButton className="settings-profile__remove" fill="clear" type="button" onClick={handleRemovePhoto}>
                   <IonIcon icon={closeCircleOutline} slot="start" />
