@@ -7,6 +7,9 @@ class AnswerChoiceInline(admin.TabularInline):
     model = AnswerChoice
     extra = 4
     max_num = 4
+    min_num = 4
+    validate_max = True
+    validate_min = True
 
 
 @admin.register(Topic)
@@ -23,6 +26,13 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'difficulty', 'topic')
     search_fields = ('prompt', 'explanation')
     inlines = (AnswerChoiceInline,)
+    fieldsets = (
+        (None, {'fields': ('topic', 'prompt', 'explanation', 'difficulty')}),
+        ('Publication', {
+            'fields': ('is_active',),
+            'description': 'Save the question with its four answers first, then activate it.',
+        }),
+    )
 
     @admin.display(description='Question')
     def short_prompt(self, question):

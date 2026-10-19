@@ -1,7 +1,8 @@
 import { Navigate, Route } from 'react-router-dom';
 import { IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { PublicOnly, RequireAuth } from '../features/auth/AuthGate';
+import { PublicOnly, RequireAuth, RequireStaff } from '../features/auth/AuthGate';
+import AdminConsole from '../pages/admin/AdminConsole';
 import Login from '../pages/login/Login';
 import Register from '../pages/register/Register';
 import Home from '../pages/home/Home';
@@ -32,6 +33,7 @@ const GameRouter: React.FC = () => (
       <Route path={appRoutes.multiplayerFriendly} element={<RequireAuth><FriendlyMatch /></RequireAuth>} />
       <Route path={appRoutes.multiplayerMatch} element={<RequireAuth><MatchRoom /></RequireAuth>} />
       <Route path={appRoutes.settings} element={<RequireAuth><Settings /></RequireAuth>} />
+      <Route path={appRoutes.admin} element={<RequireStaff><AdminConsole /></RequireStaff>} />
       <Route path={appRoutes.root} element={<Navigate to={appRoutes.home} replace />} />
       <Route path="*" element={<Navigate to={appRoutes.home} replace />} />
     </IonRouterOutlet>

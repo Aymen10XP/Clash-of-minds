@@ -3,7 +3,7 @@ import { IonButton, IonIcon } from '@ionic/react';
 import { cameraOutline, closeCircleOutline } from 'ionicons/icons';
 import GameSubpage from '../../components/game/GameSubpage';
 import { useAuth } from '../../features/auth/context';
-import { fetchFavoriteTopicPlayers, type TopicPlayer } from '../../features/auth/api';
+import { fetchPreferenceMatches, type PreferenceMatch } from '../../features/auth/api';
 import { practiceTopics } from '../../features/practice/topics';
 import { usePressNavigation } from '../../hooks/usePressNavigation';
 import { appRoutes } from '../../routing/routes';
@@ -13,8 +13,8 @@ const Settings: React.FC = () => {
   const { user, updateProfile } = useAuth();
   const { goBackAfterPress } = usePressNavigation({ delay: 140, feedback: 'light' });
   const [username, setUsername] = useState(user?.username ?? '');
-  const [favoriteTopic, setFavoriteTopic] = useState(user?.favoriteTopic ?? '');
-  const [topicPlayers, setTopicPlayers] = useState<TopicPlayer[]>([]);
+  const [favoriteTopics, setFavoriteTopics] = useState<string[]>(user?.favoriteTopics ?? []);
+  const [matches, setMatches] = useState<PreferenceMatch[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [playersError, setPlayersError] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
@@ -28,12 +28,12 @@ const Settings: React.FC = () => {
   useEffect(() => {
     setUsername(user?.username ?? '');
     setPhotoPreview(user?.profilePhoto ?? '');
-    setFavoriteTopic(user?.favoriteTopic ?? '');
-  }, [user?.username, user?.profilePhoto, user?.favoriteTopic]);
+    setFavoriteTopics(user?.favoriteTopics ?? []);
+  }, [user?.username, user?.profilePhoto, user?.favoriteTopics]);
 
   useEffect(() => {
-    if (!favoriteTopic) {
-      setTopicPlayers([]);
+    if (!user?.favoriteTopics?.length) {
+      setMatches([]);
       setPlayersLoading(false);
       setPlayersError('');
       return;
@@ -42,9 +42,9 @@ const Settings: React.FC = () => {
     let active = true;
     setPlayersLoading(true);
     setPlayersError('');
-    void fetchFavoriteTopicPlayers(favoriteTopic)
+    void fetchPreferenceMatches()
       .then((response) => {
-        if (active) setTopicPlayers(response.players);
+        if (active) setMatches(response.matches);
       })
       .catch((playersRequestError) => {
         if (active) setPlayersError(playersRequestError instanceof Error ? playersRequestError.message : 'Unable to load players.');
@@ -54,7 +54,7 @@ const Settings: React.FC = () => {
       });
 
     return () => { active = false; };
-  }, [favoriteTopic]);
+  }, [user?.favoriteTopics]);
 
   useEffect(() => setPhotoFailed(false), [photoPreview]);
 
@@ -93,7 +93,7 @@ const Settings: React.FC = () => {
           reader.readAsDataURL(selectedPhoto);
         })
         : undefined;
-      await updateProfile({ username: username.trim(), profilePhoto, removeProfilePhoto: removePhoto, favoriteTopic });
+      await updateProfile({ username: username.trim(), profilePhoto, removeProfilePhoto: removePhoto, favoriteTopics });
       setSelectedPhoto(null);
       setRemovePhoto(false);
       setSaved(true);
@@ -167,33 +167,37 @@ const Settings: React.FC = () => {
             required
           />
 
-          <label className="settings-profile__label" htmlFor="settings-favorite-topic">Favorite topic</label>
-          <select
-            id="settings-favorite-topic"
-            className="settings-profile__username settings-profile__topic-select"
-            value={favoriteTopic}
-            onChange={(event) => {
-              setFavoriteTopic(event.currentTarget.value);
-              setSaved(false);
-            }}
-          >
-            <option value="">Choose a favorite topic</option>
+          <fieldset className="settings-topics">
+            <legend>Favorite topics <span>Choose 4 or 5</span></legend>
             {practiceTopics.map((topic) => (
-              <option key={topic.id} value={topic.id}>{topic.title}</option>
+              <label className="settings-topic-option" key={topic.id}>
+                <input
+                  type="checkbox"
+                  checked={favoriteTopics.includes(topic.id)}
+                  disabled={!favoriteTopics.includes(topic.id) && favoriteTopics.length >= 5}
+                  onChange={() => {
+                    setFavoriteTopics((current) => current.includes(topic.id)
+                      ? current.filter((slug) => slug !== topic.id)
+                      : [...current, topic.id]);
+                    setSaved(false);
+                  }}
+                />
+                <span>{topic.title}</span>
+              </label>
             ))}
-          </select>
+          </fieldset>
 
           <div className="settings-topic-players" aria-live="polite">
-            {!favoriteTopic && <p className="settings-topic-players__message">Choose a topic to find players who share it.</p>}
-            {favoriteTopic && playersLoading && <p className="settings-topic-players__message">Finding players…</p>}
-            {favoriteTopic && playersError && <p className="settings-topic-players__message settings-topic-players__message--error">{playersError}</p>}
-            {favoriteTopic && !playersLoading && !playersError && topicPlayers.length === 0 && (
-              <p className="settings-topic-players__message">No other players have chosen this topic yet.</p>
+            {!user?.favoriteTopics?.length && <p className="settings-topic-players__message">Save your favorite topics to discover compatible players.</p>}
+            {!!user?.favoriteTopics?.length && playersLoading && <p className="settings-topic-players__message">Finding matches...</p>}
+            {!!user?.favoriteTopics?.length && playersError && <p className="settings-topic-players__message settings-topic-players__message--error">{playersError}</p>}
+            {!!user?.favoriteTopics?.length && !playersLoading && !playersError && matches.length === 0 && (
+              <p className="settings-topic-players__message">No player currently has a preference match above 75%.</p>
             )}
-            {topicPlayers.length > 0 && (
+            {matches.length > 0 && (
               <div className="settings-topic-players__list">
-                <h3>Players who share your topic</h3>
-                {topicPlayers.map((player) => (
+                <h3>Your preference matches</h3>
+                {matches.map((player) => (
                   <div className="settings-topic-player" key={player.id}>
                     {player.profilePhoto ? (
                       <img src={player.profilePhoto} alt="" />
@@ -201,14 +205,14 @@ const Settings: React.FC = () => {
                       <span className="settings-topic-player__avatar" aria-hidden="true">{player.username[0]?.toUpperCase() ?? '?'}</span>
                     )}
                     <span className="settings-topic-player__name">{player.username}</span>
-                    <span className="settings-topic-player__country">{player.country}</span>
+                    <span className="settings-topic-player__country">{player.country} · {player.matchRate}%</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <IonButton className="settings-profile__save" expand="block" type="submit" disabled={saving || !user}>
+          <IonButton className="settings-profile__save" expand="block" type="submit" disabled={saving || !user || favoriteTopics.length < 4}>
             {saving ? 'Saving…' : 'Save profile'}
           </IonButton>
           {error && <p className="settings-profile__notice settings-profile__notice--error" role="alert">{error}</p>}

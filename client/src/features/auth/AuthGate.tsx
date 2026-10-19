@@ -30,3 +30,12 @@ export const PublicOnly: React.FC<PropsWithChildren> = ({ children }) => {
   if (status === 'authenticated') return <Navigate to={appRoutes.home} replace />;
   return children;
 };
+
+export const RequireStaff: React.FC<PropsWithChildren> = ({ children }) => {
+  const { status, user } = useAuth();
+
+  if (status === 'loading') return <SessionLoading />;
+  if (status === 'anonymous') return <Navigate to={appRoutes.login} replace />;
+  if (!user?.isStaff) return <Navigate to={appRoutes.home} replace />;
+  return children;
+};

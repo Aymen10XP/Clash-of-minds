@@ -10,9 +10,9 @@ from .models import AnswerChoice, Question, Topic, TopScoreResponse, TopScoreRun
 
 class QuizModelTests(TestCase):
     def setUp(self):
-        self.topic = Topic.objects.create(
+        self.topic, _ = Topic.objects.get_or_create(
             slug='ancient-civilizations',
-            title='Ancient Civilizations',
+            defaults={'title': 'Ancient Civilizations'},
         )
         self.question = Question.objects.create(
             topic=self.topic,
@@ -92,7 +92,7 @@ class TopScoreModelTests(TestCase):
             password='secure-test-password',
             country='TN',
         )
-        self.topic = Topic.objects.create(slug='inventions', title='Inventions')
+        self.topic, _ = Topic.objects.get_or_create(slug='inventions', defaults={'title': 'Inventions'})
         self.question = Question.objects.create(
             topic=self.topic,
             prompt='Who is associated with the practical incandescent light bulb?',
@@ -366,3 +366,39 @@ class TopScoreApiTests(TestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(TopScoreRun.objects.get(client_run_id=run_id).score, 1)
         self.assertEqual(TopScoreRun.objects.filter(client_run_id=run_id).count(), 1)
+
+
+class AdminQuestionApiTests(TestCase):
+    def setUp(self):
+        self.topic = Topic.objects.create(slug='science', title='Science')
+        self.staff = User.objects.create_user(
+            username='quiz-admin', email='quiz-admin@example.com', password='password-123', country='TN', is_staff=True,
+        )
+        self.player = User.objects.create_user(
+            username='ordinary', email='ordinary@example.com', password='password-123', country='TN',
+        )
+        self.payload = {
+            'topicSlug': self.topic.slug,
+            'prompt': 'Which planet is known as the Red Planet?',
+            'explanation': 'Iron oxide gives Mars its color.',
+            'difficulty': 'easy',
+            'choices': ['Earth', 'Mars', 'Venus', 'Jupiter'],
+            'correctChoiceIndex': 1,
+            'isActive': True,
+        }
+
+    def test_staff_can_create_active_question_with_four_answers(self):
+        self.client.force_login(self.staff)
+        response = self.client.post('/api/quiz/admin/questions/', json.dumps(self.payload), content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+        question = Question.objects.get(pk=response.json()['question']['id'])
+        self.assertTrue(question.is_active)
+        self.assertEqual(question.choices.count(), 4)
+        self.assertEqual(question.choices.get(is_correct=True).text, 'Mars')
+
+    def test_non_staff_cannot_create_question(self):
+        self.client.force_login(self.player)
+        response = self.client.post('/api/quiz/admin/questions/', json.dumps(self.payload), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Question.objects.exists())

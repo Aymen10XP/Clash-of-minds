@@ -4,7 +4,8 @@ export type AuthUser = {
   email: string;
   country: string;
   profilePhoto?: string | null;
-  favoriteTopic?: string | null;
+  favoriteTopics?: string[];
+  isStaff?: boolean;
 };
 
 export type RegistrationData = {
@@ -20,14 +21,17 @@ export type ProfileUpdateData = {
   username: string;
   profilePhoto?: string;
   removeProfilePhoto?: boolean;
-  favoriteTopic?: string;
+  favoriteTopics?: string[];
 };
 
-export type TopicPlayer = {
+export type PreferenceMatch = {
   id: number;
   username: string;
   country: string;
   profilePhoto: string | null;
+  favoriteTopics: string[];
+  sharedTopics: string[];
+  matchRate: number;
 };
 
 export type LoginData = {
@@ -132,10 +136,8 @@ export const updateAccountProfile = async (data: ProfileUpdateData) => {
   });
 };
 
-export const fetchFavoriteTopicPlayers = async (topicSlug: string) => {
-  return request<{ topic: { slug: string; title: string }; players: TopicPlayer[] }>(
-    `favorite-topic/${encodeURIComponent(topicSlug)}/players`,
-  );
+export const fetchPreferenceMatches = async () => {
+  return request<{ threshold: number; matches: PreferenceMatch[] }>('matches');
 };
 
 export const loginAccount = async (data: LoginData) => {

@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.test import Client, TestCase
 
+from quiz.models import Topic
+
 
 class UserModelTests(TestCase):
     def test_create_user_with_required_profile_fields(self):
@@ -187,3 +189,82 @@ class AuthenticationApiTests(TestCase):
 
         self.assertEqual(rejected_response.status_code, 403)
         self.assertEqual(accepted_response.status_code, 200)
+
+
+class PreferenceMatchingApiTests(TestCase):
+    def setUp(self):
+        self.topics = [Topic.objects.create(slug=f'topic-{index}', title=f'Topic {index}') for index in range(1, 7)]
+        self.user = get_user_model().objects.create_user(
+            username='current', email='current@example.com', password='password-123', country='TN',
+        )
+        self.user.favorite_topics.set(self.topics[:4])
+        self.client.force_login(self.user)
+
+    def create_player(self, username, topics, **overrides):
+        player = get_user_model().objects.create_user(
+            username=username,
+            email=f'{username}@example.com',
+            password='password-123',
+            country='US',
+            **overrides,
+        )
+        player.favorite_topics.set(topics)
+        return player
+
+    def test_matches_only_returns_active_players_strictly_above_75_percent(self):
+        self.create_player('perfect', self.topics[:4])
+        self.create_player('eighty', self.topics[:5])
+        self.create_player('seventy_five', self.topics[:3] + [self.topics[4]])
+        self.create_player('inactive', self.topics[:4], is_active=False)
+
+        response = self.client.get('/api/auth/matches/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [(match['username'], match['matchRate']) for match in response.json()['matches']],
+            [('perfect', 100), ('eighty', 89)],
+        )
+
+    def test_profile_accepts_four_to_five_unique_favorites(self):
+        response = self.client.post('/api/auth/profile/', json.dumps({
+            'username': self.user.username,
+            'favoriteTopics': [topic.slug for topic in self.topics[:5]],
+        }), content_type='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['user']['favoriteTopics']), 5)
+
+        rejected = self.client.post('/api/auth/profile/', json.dumps({
+            'username': self.user.username,
+            'favoriteTopics': [topic.slug for topic in self.topics],
+        }), content_type='application/json')
+        self.assertEqual(rejected.status_code, 400)
+
+        too_few = self.client.post('/api/auth/profile/', json.dumps({
+            'username': self.user.username,
+            'favoriteTopics': [topic.slug for topic in self.topics[:3]],
+        }), content_type='application/json')
+        self.assertEqual(too_few.status_code, 400)
+
+
+class AdminUserApiTests(TestCase):
+    def setUp(self):
+        self.staff = get_user_model().objects.create_user(
+            username='staff', email='staff@example.com', password='password-123', country='TN', is_staff=True,
+        )
+        self.player = get_user_model().objects.create_user(
+            username='player', email='player@example.com', password='password-123', country='TN',
+        )
+
+    def test_staff_can_deactivate_but_user_is_not_deleted(self):
+        self.client.force_login(self.staff)
+        response = self.client.post(f'/api/auth/admin/users/{self.player.pk}/deactivate/', '{}', content_type='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        self.player.refresh_from_db()
+        self.assertFalse(self.player.is_active)
+        self.assertTrue(get_user_model().objects.filter(pk=self.player.pk).exists())
+
+    def test_non_staff_cannot_manage_users(self):
+        self.client.force_login(self.player)
+        self.assertEqual(self.client.get('/api/auth/admin/users/').status_code, 403)

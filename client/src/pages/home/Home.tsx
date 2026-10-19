@@ -7,6 +7,7 @@ import {
   logOutOutline,
   peopleOutline,
   settingsOutline,
+  shieldCheckmarkOutline,
   volumeHighOutline,
   volumeMuteOutline,
 } from 'ionicons/icons';
@@ -41,10 +42,18 @@ const menuItems = [
     description: 'Tune your experience',
     icon: settingsOutline,
     route: appRoutes.settings,
+    staffOnly: false,
+  },
+  {
+    label: 'Admin Console',
+    description: 'Questions and player access',
+    icon: shieldCheckmarkOutline,
+    route: appRoutes.admin,
+    staffOnly: true,
   },
 ] as const;
 
-const romanNumerals = ['I', 'II', 'III', 'IV'] as const;
+const romanNumerals = ['I', 'II', 'III', 'IV', 'V'] as const;
 
 const Home: React.FC = () => {
   const themeAudioRef = useRef<HTMLAudioElement>(null);
@@ -159,7 +168,7 @@ const Home: React.FC = () => {
         </IonRow>
 
         <IonRow className="game-menu" role="navigation" aria-label="Game modes">
-          {menuItems.map((item, index) => (
+          {menuItems.filter((item) => !('staffOnly' in item) || !item.staffOnly || user?.isStaff).map((item, index) => (
             <IonCol
               className="game-menu__column ion-display-flex"
               key={item.route}

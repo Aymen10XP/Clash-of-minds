@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     answer_top_score,
+    create_question_view,
     offline_catalog,
     quit_top_score,
     start_top_score,
@@ -10,6 +11,7 @@ from .views import (
 
 
 urlpatterns = [
+    path('admin/questions/', create_question_view, name='admin-create-question'),
     path('top-score/start/', start_top_score, name='top-score-start'),
     path('offline/catalog/', offline_catalog, name='offline-catalog'),
     path('offline/sync/', sync_offline_runs, name='offline-sync'),

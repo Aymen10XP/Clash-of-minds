@@ -7,6 +7,7 @@ from json import JSONDecodeError
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.core.files.base import ContentFile
 from django.db import IntegrityError
+from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
@@ -42,7 +43,8 @@ def _user_payload(user):
         'email': user.email,
         'country': user.country,
         'profilePhoto': user.profile_photo.url if user.profile_photo else None,
-        'favoriteTopic': user.favorite_topic.slug if user.favorite_topic_id else None,
+        'favoriteTopics': list(user.favorite_topics.order_by('sort_order', 'title').values_list('slug', flat=True)),
+        'isStaff': user.is_staff,
     }
 
 
@@ -119,20 +121,19 @@ def update_profile_view(request):
     if photo_error:
         return JsonResponse({'errors': {'profilePhoto': [photo_error]}}, status=400)
 
-    favorite_topic = request.user.favorite_topic
-    if 'favoriteTopic' in data:
-        favorite_topic_slug = data.get('favoriteTopic')
-        favorite_topic = None
-        if favorite_topic_slug:
-            if not isinstance(favorite_topic_slug, str):
-                return JsonResponse({'errors': {'favoriteTopic': ['Choose a valid topic.']}}, status=400)
-            try:
-                favorite_topic = Topic.objects.get(slug=favorite_topic_slug, is_active=True)
-            except Topic.DoesNotExist:
-                return JsonResponse({'errors': {'favoriteTopic': ['Choose a valid topic.']}}, status=400)
+    favorite_topics = None
+    if 'favoriteTopics' in data:
+        topic_slugs = data.get('favoriteTopics')
+        if not isinstance(topic_slugs, list) or not 4 <= len(topic_slugs) <= 5:
+            return JsonResponse({'errors': {'favoriteTopics': ['Choose between 4 and 5 favorite topics.']}}, status=400)
+        if not all(isinstance(slug, str) for slug in topic_slugs) or len(topic_slugs) != len(set(topic_slugs)):
+            return JsonResponse({'errors': {'favoriteTopics': ['Favorite topics must be unique and valid.']}}, status=400)
+        favorite_topics = list(Topic.objects.filter(slug__in=topic_slugs, is_active=True))
+        if len(favorite_topics) != len(topic_slugs):
+            return JsonResponse({'errors': {'favoriteTopics': ['Choose only available topics.']}}, status=400)
     user = form.save()
-    user.favorite_topic = favorite_topic
-    user.save(update_fields=('favorite_topic',))
+    if favorite_topics is not None:
+        user.favorite_topics.set(favorite_topics)
     previous_photo = user.profile_photo.name if user.profile_photo else ''
     if photo_file:
         user.profile_photo.save(photo_file.name, photo_file, save=True)
@@ -145,30 +146,81 @@ def update_profile_view(request):
 
 
 @require_GET
-def favorite_topic_players_view(request, topic_slug):
+def preference_matches_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Sign in to view players.'}, status=401)
-    try:
-        topic = Topic.objects.get(slug=topic_slug, is_active=True)
-    except Topic.DoesNotExist:
-        return JsonResponse({'error': 'The selected topic is not available.'}, status=404)
+    selected = set(request.user.favorite_topics.filter(is_active=True).values_list('slug', flat=True))
+    if len(selected) < 4:
+        return JsonResponse({'threshold': 75, 'matches': []})
 
-    players = get_user_model().objects.filter(
-        favorite_topic=topic,
-        is_active=True,
-    ).exclude(pk=request.user.pk).order_by('username')
-    return JsonResponse({
-        'topic': {'slug': topic.slug, 'title': topic.title},
-        'players': [
-            {
+    players = get_user_model().objects.filter(is_active=True).exclude(
+        pk=request.user.pk,
+    ).prefetch_related(
+        Prefetch('favorite_topics', queryset=Topic.objects.filter(is_active=True).order_by('sort_order', 'title')),
+    ).order_by('username')
+    matches = []
+    for player in players:
+        player_topics = {topic.slug for topic in player.favorite_topics.all()}
+        if len(player_topics) < 4:
+            continue
+        raw_score = (2 * len(selected & player_topics) / (len(selected) + len(player_topics))) * 100
+        if raw_score > 75:
+            matches.append({
                 'id': player.pk,
                 'username': player.username,
                 'country': player.country,
                 'profilePhoto': player.profile_photo.url if player.profile_photo else None,
-            }
-            for player in players[:50]
-        ],
+                'favoriteTopics': sorted(player_topics),
+                'sharedTopics': sorted(selected & player_topics),
+                'matchRate': round(raw_score),
+            })
+    matches.sort(key=lambda match: (-match['matchRate'], match['username'].lower()))
+    return JsonResponse({
+        'threshold': 75,
+        'matches': matches[:50],
     })
+
+
+def _staff_required(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication is required.'}, status=401)
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Administrator access is required.'}, status=403)
+    return None
+
+
+@require_GET
+def admin_users_view(request):
+    denied = _staff_required(request)
+    if denied:
+        return denied
+    users = get_user_model().objects.order_by('username')
+    return JsonResponse({'users': [{
+        'id': user.pk,
+        'username': user.username,
+        'email': user.email,
+        'country': user.country,
+        'isActive': user.is_active,
+        'isStaff': user.is_staff,
+    } for user in users]})
+
+
+@require_POST
+def deactivate_user_view(request, user_id):
+    denied = _staff_required(request)
+    if denied:
+        return denied
+    if user_id == request.user.pk:
+        return JsonResponse({'error': 'You cannot deactivate your own account.'}, status=400)
+    try:
+        user = get_user_model().objects.get(pk=user_id)
+    except get_user_model().DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
+    if user.is_superuser:
+        return JsonResponse({'error': 'A superuser cannot be deactivated here.'}, status=400)
+    user.is_active = False
+    user.save(update_fields=('is_active',))
+    return JsonResponse({'message': 'User deactivated.', 'userId': user.pk, 'isActive': False})
 
 
 @require_POST

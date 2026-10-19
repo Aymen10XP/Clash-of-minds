@@ -13,6 +13,7 @@ export const appRoutes = {
   multiplayerFriendly: '/multiplayer/friendly',
   multiplayerMatch: '/multiplayer/match/:matchId',
   settings: '/settings',
+  admin: '/admin-console',
 } as const;
 
 export type AppRoute = (typeof appRoutes)[keyof typeof appRoutes];

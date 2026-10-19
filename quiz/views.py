@@ -29,6 +29,14 @@ def _unauthenticated():
     return JsonResponse({'error': 'Authentication is required.'}, status=401)
 
 
+def _staff_required(request):
+    if not request.user.is_authenticated:
+        return _unauthenticated()
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Administrator access is required.'}, status=403)
+    return None
+
+
 def _question_payload(question):
     choices = list(question.choices.values('id', 'text'))
     random.shuffle(choices)
@@ -52,6 +60,70 @@ def _offline_question_payload(question):
 
 def _best_score(user):
     return TopScoreRun.objects.filter(user=user).aggregate(best=Max('score'))['best'] or 0
+
+
+@require_POST
+@transaction.atomic
+def create_question_view(request):
+    denied = _staff_required(request)
+    if denied:
+        return denied
+    data = _read_json(request)
+    if data is None:
+        return JsonResponse({'error': 'Request body must contain a JSON object.'}, status=400)
+
+    raw_prompt = data.get('prompt', '')
+    raw_explanation = data.get('explanation', '')
+    prompt = raw_prompt.strip() if isinstance(raw_prompt, str) else ''
+    explanation = raw_explanation.strip() if isinstance(raw_explanation, str) else ''
+    choices = data.get('choices')
+    difficulty = data.get('difficulty', Question.Difficulty.MEDIUM)
+    correct_index = data.get('correctChoiceIndex')
+    if not prompt:
+        return JsonResponse({'error': 'Question text is required.'}, status=400)
+    if difficulty not in Question.Difficulty.values:
+        return JsonResponse({'error': 'Choose a valid difficulty.'}, status=400)
+    if not isinstance(choices, list) or len(choices) != 4:
+        return JsonResponse({'error': 'Exactly four answer choices are required.'}, status=400)
+    if not all(isinstance(choice, str) for choice in choices):
+        return JsonResponse({'error': 'Answer choices must be text.'}, status=400)
+    normalized_choices = [choice.strip() for choice in choices]
+    if any(not choice for choice in normalized_choices):
+        return JsonResponse({'error': 'Answer choices cannot be empty.'}, status=400)
+    if len({choice.casefold() for choice in normalized_choices}) != 4:
+        return JsonResponse({'error': 'Answer choices must be unique.'}, status=400)
+    if not isinstance(correct_index, int) or isinstance(correct_index, bool) or not 0 <= correct_index < 4:
+        return JsonResponse({'error': 'Choose one correct answer.'}, status=400)
+    try:
+        topic = Topic.objects.get(slug=data.get('topicSlug'), is_active=True)
+    except Topic.DoesNotExist:
+        return JsonResponse({'error': 'Choose an available topic.'}, status=400)
+
+    question = Question.objects.create(
+        topic=topic,
+        prompt=prompt,
+        explanation=explanation,
+        difficulty=difficulty,
+        is_active=False,
+    )
+    for index, choice in enumerate(normalized_choices):
+        AnswerChoice.objects.create(
+            question=question,
+            text=choice,
+            position=index + 1,
+            is_correct=index == correct_index,
+        )
+    question.is_active = bool(data.get('isActive', True))
+    question.save()
+    return JsonResponse({
+        'question': {
+            'id': question.pk,
+            'prompt': question.prompt,
+            'topicSlug': topic.slug,
+            'difficulty': question.difficulty,
+            'isActive': question.is_active,
+        },
+    }, status=201)
 
 
 @require_GET
