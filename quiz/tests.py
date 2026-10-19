@@ -1,6 +1,8 @@
+import json
+
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from accounts.models import User
@@ -213,7 +215,40 @@ class SeedQuizCommandTests(TestCase):
         self.assertEqual(response.selected_choice_id, selected_choice.pk)
         self.assertEqual(question.choices.count(), 4)
         self.assertEqual(question.choices.filter(is_correct=True).count(), 1)
-import json
+
+
+@override_settings(DEBUG=True)
+class SeedDemoCommandTests(TestCase):
+    def test_seed_demo_creates_complete_idempotent_test_environment(self):
+        options = {
+            'player_password': 'test-player-password-47',
+            'admin_password': 'test-admin-password-84',
+            'verbosity': 0,
+        }
+        call_command('seed_demo', **options)
+        call_command('seed_demo', **options)
+
+        player = User.objects.get(username='demo_player')
+        admin = User.objects.get(username='demo_admin')
+
+        self.assertTrue(player.check_password(options['player_password']))
+        self.assertFalse(player.is_staff)
+        self.assertTrue(player.is_active)
+        self.assertTrue(admin.check_password(options['admin_password']))
+        self.assertTrue(admin.is_staff)
+        self.assertFalse(admin.is_superuser)
+        self.assertTrue(admin.is_active)
+        self.assertEqual(player.favorite_topics.count(), 4)
+        self.assertEqual(
+            set(player.favorite_topics.values_list('slug', flat=True)),
+            set(admin.favorite_topics.values_list('slug', flat=True)),
+        )
+        self.assertEqual(User.objects.filter(username__in=('demo_player', 'demo_admin')).count(), 2)
+        self.assertEqual(Topic.objects.count(), 6)
+        self.assertEqual(Question.objects.filter(is_active=True).count(), 30)
+        for question in Question.objects.prefetch_related('choices'):
+            self.assertEqual(question.choices.count(), 4)
+            self.assertEqual(question.choices.filter(is_correct=True).count(), 1)
 
 
 

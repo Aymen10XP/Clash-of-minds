@@ -17,7 +17,8 @@
     "test:e2e": "turbo run test:e2e",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "db:logs": "docker compose logs -f postgres"
+    "db:logs": "docker compose logs -f postgres",
+    "seed:demo": "node scripts/seed-demo.mjs"
   },
   "devDependencies": {
     "turbo": "2.11.5"
