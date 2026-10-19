@@ -50,6 +50,10 @@ const AdminConsole: React.FC = () => {
     }
   };
 
+  const updateChoice = (index: number, value: string) => {
+    setChoices((current) => current.map((item, choiceIndex) => choiceIndex === index ? value : item));
+  };
+
   const disableUser = async (user: AdminUser) => {
     if (!window.confirm(`Deactivate ${user.username}? They will no longer be able to sign in.`)) return;
     setError('');
@@ -75,7 +79,7 @@ const AdminConsole: React.FC = () => {
               <label className="admin-answer admin-form__wide" key={index}>
                 <input type="radio" name="correct-answer" checked={correctChoiceIndex === index} onChange={() => setCorrectChoiceIndex(index)} aria-label={`Mark answer ${index + 1} correct`} />
                 <span>Answer {index + 1}</span>
-                <input value={choice} onChange={(event) => setChoices((current) => current.map((item, choiceIndex) => choiceIndex === index ? event.currentTarget.value : item))} required />
+                <input value={choice} onChange={(event) => updateChoice(index, event.currentTarget.value)} required />
               </label>
             ))}
             <label className="admin-form__wide">Explanation (optional)<textarea value={explanation} onChange={(event) => setExplanation(event.currentTarget.value)} /></label>
