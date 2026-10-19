@@ -1,9 +1,13 @@
 import json
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from quiz.models import Topic
 
@@ -189,6 +193,84 @@ class AuthenticationApiTests(TestCase):
 
         self.assertEqual(rejected_response.status_code, 403)
         self.assertEqual(accepted_response.status_code, 200)
+
+
+@override_settings(
+    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    FRONTEND_URL='http://testserver:5173',
+    DEBUG=True,
+)
+class PasswordResetApiTests(TestCase):
+    password = 'secure-test-password-47'
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='historian',
+            email='historian@example.com',
+            password=self.password,
+            country='TN',
+        )
+
+    def post_json(self, path, data):
+        return self.client.post(path, json.dumps(data), content_type='application/json')
+
+    def test_request_sends_expiring_reset_link(self):
+        response = self.post_json('/api/auth/password-reset/request/', {
+            'email': self.user.email.upper(),
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
+        self.assertIn('/reset-password/', mail.outbox[0].body)
+        self.assertIn('debugResetUrl', response.json())
+
+    def test_request_does_not_reveal_unknown_email(self):
+        response = self.post_json('/api/auth/password-reset/request/', {
+            'email': 'unknown@example.com',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertNotIn('debugResetUrl', response.json())
+        self.assertIn('If an active account', response.json()['message'])
+
+    def test_valid_token_changes_password_and_cannot_be_reused(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+        payload = {
+            'uid': uid,
+            'token': token,
+            'password': 'a-new-secure-password-84',
+            'confirmPassword': 'a-new-secure-password-84',
+        }
+
+        response = self.post_json('/api/auth/password-reset/confirm/', payload)
+        reused_response = self.post_json('/api/auth/password-reset/confirm/', payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(reused_response.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('a-new-secure-password-84'))
+
+    def test_invalid_token_and_mismatched_passwords_are_rejected(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        invalid = self.post_json('/api/auth/password-reset/confirm/', {
+            'uid': uid,
+            'token': 'invalid-token',
+            'password': 'a-new-secure-password-84',
+            'confirmPassword': 'a-new-secure-password-84',
+        })
+        mismatch = self.post_json('/api/auth/password-reset/confirm/', {
+            'uid': uid,
+            'token': default_token_generator.make_token(self.user),
+            'password': 'a-new-secure-password-84',
+            'confirmPassword': 'different-secure-password-84',
+        })
+
+        self.assertEqual(invalid.status_code, 400)
+        self.assertEqual(mismatch.status_code, 400)
+        self.assertIn('confirmPassword', mismatch.json()['errors'])
 
 
 class PreferenceMatchingApiTests(TestCase):

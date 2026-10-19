@@ -5,6 +5,8 @@ import { PublicOnly, RequireAuth, RequireStaff } from '../features/auth/AuthGate
 import AdminConsole from '../pages/admin/AdminConsole';
 import Login from '../pages/login/Login';
 import Register from '../pages/register/Register';
+import ForgotPassword from '../pages/forgot-password/ForgotPassword';
+import ResetPassword from '../pages/reset-password/ResetPassword';
 import Home from '../pages/home/Home';
 import Multiplayer from '../pages/multiplayer/Multiplayer';
 import FriendlyMatch from '../pages/multiplayer/friendly/FriendlyMatch';
@@ -23,6 +25,8 @@ const GameRouter: React.FC = () => (
       <Route path={appRoutes.home} element={<RequireAuth><Home /></RequireAuth>} />
       <Route path={appRoutes.login} element={<PublicOnly><Login /></PublicOnly>} />
       <Route path={appRoutes.register} element={<PublicOnly><Register /></PublicOnly>} />
+      <Route path={appRoutes.forgotPassword} element={<PublicOnly><ForgotPassword /></PublicOnly>} />
+      <Route path={appRoutes.resetPassword} element={<PublicOnly><ResetPassword /></PublicOnly>} />
       <Route path={appRoutes.story} element={<RequireAuth><Story /></RequireAuth>} />
       <Route path={appRoutes.practice} element={<RequireAuth><Practice /></RequireAuth>} />
       <Route path={appRoutes.practiceTopScore} element={<RequireAuth><PracticeTopScore /></RequireAuth>} />

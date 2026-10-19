@@ -5,10 +5,17 @@ import re
 from json import JSONDecodeError
 
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Prefetch
 from django.http import JsonResponse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
@@ -248,6 +255,73 @@ def login_view(request):
         request.session.set_expiry(0)
 
     return JsonResponse({'user': _user_payload(user)})
+
+
+@require_POST
+def password_reset_request_view(request):
+    data = _read_json(request)
+    if data is None:
+        return JsonResponse({'error': 'Request body must contain a JSON object.'}, status=400)
+
+    email = str(data.get('email', '')).strip()
+    if not email:
+        return JsonResponse({'errors': {'email': ['Enter your email address.']}}, status=400)
+
+    user = get_user_model().objects.filter(email__iexact=email, is_active=True).first()
+    reset_url = None
+    if user is not None:
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        reset_url = f'{settings.FRONTEND_URL.rstrip("/")}/reset-password/{uid}/{token}'
+        send_mail(
+            subject='Reset your Clash of Minds password',
+            message=(
+                f'Hello {user.username},\n\n'
+                'Use the link below to choose a new password:\n'
+                f'{reset_url}\n\n'
+                'If you did not request this change, you can ignore this email.'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+
+    payload = {
+        'message': 'If an active account uses that email, a password reset link has been sent.',
+    }
+    if settings.DEBUG and reset_url:
+        payload['debugResetUrl'] = reset_url
+    return JsonResponse(payload)
+
+
+@require_POST
+def password_reset_confirm_view(request):
+    data = _read_json(request)
+    if data is None:
+        return JsonResponse({'error': 'Request body must contain a JSON object.'}, status=400)
+
+    password = str(data.get('password', ''))
+    confirm_password = str(data.get('confirmPassword', ''))
+    if password != confirm_password:
+        return JsonResponse({'errors': {'confirmPassword': ['Passwords do not match.']}}, status=400)
+
+    try:
+        user_id = force_str(urlsafe_base64_decode(str(data.get('uid', ''))))
+        user = get_user_model().objects.get(pk=user_id, is_active=True)
+    except (ValueError, TypeError, OverflowError, UnicodeDecodeError, get_user_model().DoesNotExist):
+        user = None
+
+    token = str(data.get('token', ''))
+    if user is None or not default_token_generator.check_token(user, token):
+        return JsonResponse({'error': 'This password reset link is invalid or has expired.'}, status=400)
+
+    try:
+        validate_password(password, user=user)
+    except ValidationError as error:
+        return JsonResponse({'errors': {'password': list(error.messages)}}, status=400)
+
+    user.set_password(password)
+    user.save(update_fields=('password',))
+    return JsonResponse({'message': 'Your password has been reset successfully.'})
 
 
 @require_POST

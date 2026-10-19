@@ -40,6 +40,13 @@ export type LoginData = {
   rememberMe: boolean;
 };
 
+export type PasswordResetData = {
+  uid: string;
+  token: string;
+  password: string;
+  confirmPassword: string;
+};
+
 type ErrorPayload = {
   error?: string;
   errors?: Record<string, string[]>;
@@ -142,6 +149,20 @@ export const fetchPreferenceMatches = async () => {
 
 export const loginAccount = async (data: LoginData) => {
   return request<{ user: AuthUser }>('login', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const requestPasswordReset = async (email: string) => {
+  return request<{ message: string; debugResetUrl?: string }>('password-reset/request', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+};
+
+export const confirmPasswordReset = async (data: PasswordResetData) => {
+  return request<{ message: string }>('password-reset/confirm', {
     method: 'POST',
     body: JSON.stringify(data),
   });

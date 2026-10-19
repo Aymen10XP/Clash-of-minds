@@ -5,6 +5,7 @@ import TestIonRouter from '../../test/TestIonRouter';
 import { appRoutes } from '../../routing/routes';
 import Login from './Login';
 import Register from '../register/Register';
+import ForgotPassword from '../forgot-password/ForgotPassword';
 import { AuthProvider } from '../../features/auth/AuthContext';
 
 const fetchMock = vi.fn();
@@ -21,6 +22,7 @@ const renderFlow = () =>
         <Routes>
           <Route path={appRoutes.login} element={<Login />} />
           <Route path={appRoutes.register} element={<Register />} />
+          <Route path={appRoutes.forgotPassword} element={<ForgotPassword />} />
         </Routes>
       </AuthProvider>
     </TestIonRouter>,
@@ -63,6 +65,15 @@ test('moves from login to the registration screen', async () => {
 
   expect(await screen.findByRole('region', { name: 'Create account form' })).toBeDefined();
   expect(document.querySelectorAll('ion-input.auth-input')).toHaveLength(5);
+});
+
+test('opens the forgot-password form from login', async () => {
+  renderFlow();
+
+  fireEvent.click((await screen.findByText('Forgot password?')).closest('ion-button')!);
+
+  expect(await screen.findByRole('region', { name: 'Forgot password form' })).toBeDefined();
+  expect(screen.getByText(/secure, one-hour reset link/i)).toBeDefined();
 });
 
 test('filters countries by name and stores the selected country code', async () => {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { loginAccount } from './api';
+import { confirmPasswordReset, loginAccount, requestPasswordReset } from './api';
 
 const fetchMock = vi.fn();
 
@@ -39,4 +39,32 @@ test('bootstraps a missing CSRF cookie before login', async () => {
 
   const loginHeaders = fetchMock.mock.calls[1][1]?.headers as Headers;
   expect(loginHeaders.get('X-CSRFToken')).toBe('fresh-token');
+});
+
+test('requests and confirms a password reset through the auth API', async () => {
+  document.cookie = 'csrftoken=reset-token; path=/';
+  fetchMock
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ message: 'Reset link sent.' }),
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ message: 'Password reset.' }),
+    });
+
+  await requestPasswordReset('historian@example.com');
+  await confirmPasswordReset({
+    uid: 'MQ',
+    token: 'signed-token',
+    password: 'new-password-84',
+    confirmPassword: 'new-password-84',
+  });
+
+  expect(fetchMock.mock.calls[0][0]).toBe('/api/auth/password-reset/request/');
+  expect(fetchMock.mock.calls[1][0]).toBe('/api/auth/password-reset/confirm/');
+  expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body))).toMatchObject({
+    uid: 'MQ',
+    token: 'signed-token',
+  });
 });

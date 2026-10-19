@@ -3,6 +3,8 @@ export const appRoutes = {
   home: '/home',
   login: '/login',
   register: '/register',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password/:uid/:token',
   story: '/story',
   practice: '/practice',
   practiceTopScore: '/practice/top-score',

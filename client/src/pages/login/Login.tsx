@@ -1,4 +1,4 @@
-import { IonCheckbox, IonRow } from '@ionic/react';
+import { IonButton, IonCheckbox, IonRow } from '@ionic/react';
 import { lockClosedOutline, personOutline } from 'ionicons/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AuthInput from '../../components/auth/AuthInput';
@@ -61,6 +61,14 @@ const Login: React.FC = () => {
         <IonCheckbox className="auth-checkbox" name="rememberMe" labelPlacement="end" defaultChecked>
           Keep me signed in
         </IonCheckbox>
+        <IonButton
+          className="login-forgot-password"
+          fill="clear"
+          type="button"
+          onClick={() => navigate(appRoutes.forgotPassword)}
+        >
+          Forgot password?
+        </IonButton>
       </IonRow>
     </AuthPage>
   );

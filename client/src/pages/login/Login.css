@@ -1,3 +1,14 @@
 .login-page {
   --auth-focus-x: 24%;
 }
+
+.login-forgot-password {
+  --color: var(--game-color-accent);
+  --padding-start: 4px;
+  --padding-end: 4px;
+  min-height: 34px;
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-transform: none;
+}
