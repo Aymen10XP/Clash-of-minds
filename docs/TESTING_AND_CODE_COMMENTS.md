@@ -17,6 +17,20 @@ Reusable setup helpers (`setUp`, `post_json`, fixture builders) support the scen
 | `client/src/features/quiz/api.test.ts` | Topic-specific online start, offline catalog start, and visible server validation errors |
 | `client/src/features/sync/api.test.ts` | Successful offline result upload and retaining queued runs after a server error |
 
+## Second test portion
+
+This batch adds checks for gaps identified in the first pass:
+
+| Test module | Added behavior | Quality contribution |
+| --- | --- | --- |
+| `quiz/tests.py` (`TopScoreApiTests`) | Reject a replayed online answer without increasing score or response count | Functional suitability and reliability |
+| `quiz/tests.py` (`TopScoreApiTests`) | Reject an answer choice belonging to another question | Functional suitability and security |
+| `quiz/tests.py` (`TopScoreApiTests`) | Require a valid CSRF token for an authenticated quiz answer | Security |
+| `multiplayer/tests.py` (`MultiplayerApiTests`) | Keep player-search SQL query count constant as matching users grow from 1 to 11 | Performance regression smoke check |
+| `client/cypress/e2e/test.cy.ts` | Check accessible names, failed-login announcement, and phone-width overflow | Usability/accessibility smoke coverage |
+
+The Cypress scenarios are authored but could not be executed in this environment: Cypress 13.17.0 exits at startup with `bad option: --smoke-test` and `--ping=310`. Treat these browser checks as pending verification until Cypress can start on a supported local setup. The phone-width case is a responsive layout smoke check; it does not prove multi-browser compatibility.
+
 Existing frontend tests cover app routing, login form behavior, practice navigation, offline scoring, camera conversion/cancellation, admin question entry, multiplayer navigation, and match room answer submission.
 
 ## Existing backend coverage
@@ -46,7 +60,7 @@ npm run build --workspace @mind-clash/client
 npm run test:e2e
 ```
 
-The client unit tests use Vitest with jsdom and Testing Library. Backend tests use Django's test runner and its configured test database. Cypress covers browser-level route interactions. A failure at tool startup (for example, a missing installed package) should be reported separately from a failing assertion.
+The client unit tests use Vitest with jsdom and Testing Library. Backend tests use Django's test runner and its configured test database. Cypress specs define browser-level route interactions but are not currently executable in the provided environment. A failure at tool startup (for example, a missing installed package) should be reported separately from a failing assertion.
 
 ## Mapping to ISO/IEC 25010 quality concerns
 
@@ -55,14 +69,13 @@ ISO/IEC 25010 describes product quality characteristics; it does not prescribe o
 | Quality concern | Current evidence | Additional evidence needed for a release claim |
 | --- | --- | --- |
 | Functional suitability | Django domain/API tests and client interaction tests | Acceptance scenarios for every shipped flow, including recovery paths |
-| Performance efficiency | No automated performance gate currently configured | Load tests for matchmaking, answer submission, and database/Redis behavior; agreed latency targets |
-| Compatibility | Browser UI tests and Capacitor project configuration | Android emulator/device matrix, OS/version coverage, network-condition checks |
-| Interaction capability (usability/accessibility) | Accessible names/status assertions in selected UI tests | Keyboard/screen-reader audit, contrast review, touch-target review, reduced-motion checks |
-| Reliability | Offline queue and backend state-transition tests | Reconnect, interrupted sync, duplicate requests, soak, and recovery tests |
-| Security | Session/CSRF, staff boundary, participant boundary, and server grading tests | Dependency/security scanning, broader authorization matrix, rate-limit and deployment configuration review |
+| Performance efficiency | A query-count regression test checks player search does not add one SQL query per result | Load tests for matchmaking, answer submission, and database/Redis behavior; measured latency at agreed concurrency and response-time targets |
+| Compatibility | Browser UI tests and Capacitor configuration; phone-width smoke case is pending Cypress execution | Run supported browsers/devices and test an external API contract if one is introduced |
+| Usability | Testing Library route/input checks; Cypress accessible-name and error-announcement scenarios are pending execution | Keyboard/screen-reader audit, contrast and touch-target review, reduced-motion checks, and user acceptance |
+| Reliability | Offline queue tests plus a new replay test that guards against duplicate score/response writes | Interrupted sync, reconnect, soak, and recovery tests |
+| Security | Session/CSRF, staff and participant boundaries; new CSRF and cross-question-choice API checks | Dependency/security scanning, broader authorization matrix, rate-limit review, and DAST against a running app |
 | Maintainability | Strict TypeScript build, lint command, descriptive test names | Required CI gates, coverage trend, reviewed architecture and quality reports |
-| Flexibility | Feature-level API and UI structure | Platform/browser change impact and upgrade tests |
-| Safety | No dedicated safety-critical behavior identified in the current game scope | Reassess if user-generated or consequential content is introduced |
+| Portability | The Django test suite runs against in-memory SQLite without requiring PostgreSQL | Verify full application setup from a clean machine or container |
 
 The table is a coverage map, not a declaration that the product is ISO certified or that unlisted testing has been completed.
 
@@ -76,12 +89,12 @@ The table is a coverage map, not a declaration that the product is ISO certified
 
 ## Verification result
 
-The first client run exposed two setup issues: the installed modules were missing the already-declared `@capacitor/camera` package, and a newly added API error test needed to establish the CSRF cookie first. The workspace dependencies were installed from the existing lockfile, the test fixture was corrected, and the server test script was pointed at its self-contained SQLite settings instead of the configured PostgreSQL development database.
+The first client run exposed two setup issues: the installed modules were missing the already-declared `@capacitor/camera` package, and a newly added API error test needed to establish the CSRF cookie first. The workspace dependencies were installed from the existing lockfile, the test fixture was corrected, and the server test script was pointed at its self-contained SQLite settings instead of the configured PostgreSQL development database. The server suite also runs against in-memory SQLite without PostgreSQL, which is a limited portability check for tests, not for full deployment. Cypress could not start, as noted above.
 
 Final checks completed:
 
 ```text
-npm test                                      passed: 31 client + 59 Django tests
+npm test                                      passed: 31 client + 63 Django tests
 npm run build --workspace @mind-clash/client  passed: TypeScript and Vite production build
 ```
 

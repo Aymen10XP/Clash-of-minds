@@ -23,15 +23,36 @@
       "persistent": true
     },
     "@mind-clash/server#build": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/manage.py", "$TURBO_ROOT$/scripts/run-django.mjs"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/accounts/**",
+        "$TURBO_ROOT$/quiz/**",
+        "$TURBO_ROOT$/multiplayer/**",
+        "$TURBO_ROOT$/manage.py",
+        "$TURBO_ROOT$/scripts/**"
+      ],
       "outputs": []
     },
     "@mind-clash/server#check": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/manage.py", "$TURBO_ROOT$/scripts/run-django.mjs"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/accounts/**",
+        "$TURBO_ROOT$/quiz/**",
+        "$TURBO_ROOT$/multiplayer/**",
+        "$TURBO_ROOT$/manage.py",
+        "$TURBO_ROOT$/scripts/**"
+      ],
       "outputs": []
     },
     "@mind-clash/server#test": {
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/manage.py", "$TURBO_ROOT$/scripts/run-django.mjs"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/accounts/**",
+        "$TURBO_ROOT$/quiz/**",
+        "$TURBO_ROOT$/multiplayer/**",
+        "$TURBO_ROOT$/manage.py",
+        "$TURBO_ROOT$/scripts/**"
+      ],
       "outputs": []
     }
   }

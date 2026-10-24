@@ -1,7 +1,9 @@
 import json
 
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from datetime import timedelta
 
@@ -66,6 +68,37 @@ class MultiplayerApiTests(TestCase):
             'username': 'bob',
             'country': 'US',
         }])
+
+    def test_player_search_query_count_stays_constant_as_results_grow(self):
+        """Catches per-result ORM queries as the player-search result set grows."""
+        self.client.force_login(self.alice)
+        get_user_model().objects.create_user(
+            username='scale-player-1',
+            email='scale-player-1@example.com',
+            password='test-password-47',
+            country='TN',
+        )
+        small_result_query_count = self._player_search_query_count()
+
+        for index in range(2, 12):
+            get_user_model().objects.create_user(
+                username=f'scale-player-{index}',
+                email=f'scale-player-{index}@example.com',
+                password='test-password-47',
+                country='TN',
+            )
+
+        large_result_query_count = self._player_search_query_count()
+
+        self.assertEqual(small_result_query_count, large_result_query_count)
+
+    def _player_search_query_count(self):
+        """Returns SQL query count for a successful player search request."""
+        with CaptureQueriesContext(connection) as captured_queries:
+            response = self.client.get('/api/multiplayer/players/?q=scale-player-')
+
+        self.assertEqual(response.status_code, 200)
+        return len(captured_queries)
 
     def test_invitation_acceptance_creates_one_match_with_two_participants(self):
         self.client.force_login(self.alice)
