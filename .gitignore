@@ -198,3 +198,6 @@ tmp/
 
 # Local project documentation
 /docs/
+!/docs/
+/docs/*
+!/docs/TESTING_AND_CODE_COMMENTS.md
