@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+node_modules
+client/node_modules
+client/dist
+client/android
+media
+staticfiles
+deploy
+docs
+_work
+*.log

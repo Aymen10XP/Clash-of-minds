@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-test-connection"
+  labels:
+    {{- include "clash.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: curlimages/curl:8.12.1
+      command:
+        - sh
+        - -c
+        - >-
+          curl --fail --silent http://frontend/healthz &&
+          curl --fail --silent -H 'Host: {{ .Values.global.host }}' http://backend:8000/health/ &&
+          curl --fail --silent -H 'Host: {{ .Values.global.host }}' http://backend:8000/ready/

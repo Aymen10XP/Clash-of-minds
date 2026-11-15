@@ -1,0 +1,14 @@
+global:
+  host: clash.local
+
+frontend:
+  image:
+    repository: clash-of-minds-frontend
+    tag: dev
+    pullPolicy: IfNotPresent
+
+backend:
+  image:
+    repository: clash-of-minds-backend
+    tag: dev
+    pullPolicy: IfNotPresent

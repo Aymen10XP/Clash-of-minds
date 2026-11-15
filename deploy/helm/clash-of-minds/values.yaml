@@ -1,0 +1,53 @@
+global:
+  host: clash.local
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: clash-of-minds-frontend
+    tag: dev
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+backend:
+  replicaCount: 1
+  image:
+    repository: clash-of-minds-backend
+    tag: dev
+    pullPolicy: IfNotPresent
+  mediaImage: nginxinc/nginx-unprivileged:1.27-alpine
+  mediaStorage: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+postgres:
+  image: postgres:17-alpine
+  database: clash_of_minds
+  username: clash_of_minds
+  storage: 2Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+secrets:
+  djangoSecretKey: change-me
+  postgresPassword: change-me
+
+ingress:
+  enabled: true
+  className: nginx

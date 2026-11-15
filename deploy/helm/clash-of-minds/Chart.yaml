@@ -1,0 +1,6 @@
+apiVersion: v2
+name: clash-of-minds
+description: Kubernetes deployment for the Ionic and Django Clash of Minds application
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

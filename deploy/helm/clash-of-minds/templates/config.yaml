@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clash-config
+  labels:
+    {{- include "clash.labels" . | nindent 4 }}
+data:
+  DJANGO_DEBUG: "False"
+  DJANGO_ALLOWED_HOSTS: "{{ .Values.global.host }},localhost,127.0.0.1"
+  DJANGO_CSRF_TRUSTED_ORIGINS: "http://{{ .Values.global.host }},http://localhost,http://127.0.0.1"
+  DJANGO_SESSION_COOKIE_SECURE: "False"
+  DJANGO_CSRF_COOKIE_SECURE: "False"
+  POSTGRES_DB: {{ .Values.postgres.database | quote }}
+  POSTGRES_USER: {{ .Values.postgres.username | quote }}
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_CONN_MAX_AGE: "60"
+  FRONTEND_URL: "http://{{ .Values.global.host }}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: clash-secrets
+  labels:
+    {{- include "clash.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  DJANGO_SECRET_KEY: {{ .Values.secrets.djangoSecretKey | quote }}
+  POSTGRES_PASSWORD: {{ .Values.secrets.postgresPassword | quote }}
