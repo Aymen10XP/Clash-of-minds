@@ -196,5 +196,11 @@ tmp/
 *.bak
 *.orig
 
-# Local project documentation
+# Local project documentation and guides
 /docs/
+/guides/
+*.doc
+*.docx
+*.odt
+*.pdf
+*[Gg][Uu][Ii][Dd][Ee]*.md
