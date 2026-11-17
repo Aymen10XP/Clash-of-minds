@@ -2,7 +2,7 @@ import json
 
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
 from accounts.models import User
@@ -303,6 +303,83 @@ class TopScoreApiTests(TestCase):
         self.assertFalse(result['gameOver'])
         self.assertEqual(result['score'], 1)
         self.assertNotEqual(result['question']['id'], question.pk)
+
+    def test_replayed_answer_cannot_increment_score_or_create_a_second_response(self):
+        """Protects online runs from duplicate submissions for a resolved question."""
+        payload = self.start_run()
+        question = Question.objects.get(pk=payload['question']['id'])
+        correct_choice = question.choices.get(is_correct=True)
+        path = f"/api/quiz/top-score/{payload['runId']}/answer/"
+        body = {'questionId': question.pk, 'choiceId': correct_choice.pk}
+
+        first = self.post_json(path, body)
+        replay = self.post_json(path, body)
+
+        run = TopScoreRun.objects.get(client_run_id=payload['runId'])
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(replay.status_code, 409)
+        self.assertEqual(run.score, 1)
+        self.assertEqual(run.responses.count(), 1)
+
+    def test_answer_rejects_a_choice_belonging_to_a_different_question(self):
+        """Prevents a modified client from answering with another question's choice."""
+        payload = self.start_run()
+        other_question = Question.objects.create(
+            topic=Topic.objects.get(slug='ancient-civilizations'),
+            prompt='An unrelated question used to test choice ownership.',
+        )
+        unrelated_choice = AnswerChoice.objects.create(
+            question=other_question,
+            text='Unrelated option',
+            position=1,
+        )
+
+        response = self.post_json(
+            f"/api/quiz/top-score/{payload['runId']}/answer/",
+            {'questionId': payload['question']['id'], 'choiceId': unrelated_choice.pk},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(TopScoreResponse.objects.exists())
+        self.assertEqual(
+            TopScoreRun.objects.get(client_run_id=payload['runId']).status,
+            TopScoreRun.Status.ACTIVE,
+        )
+
+    def test_answer_requires_a_csrf_token_and_accepts_a_bootstrapped_token(self):
+        """Verifies authenticated quiz mutations are protected by Django CSRF checks."""
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+        bootstrap = csrf_client.get('/api/auth/me/')
+        csrf_token = bootstrap.cookies['csrftoken'].value
+        started = csrf_client.post(
+            '/api/quiz/top-score/start/',
+            '{}',
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+        self.assertEqual(started.status_code, 201)
+        payload = started.json()
+        question = Question.objects.get(pk=payload['question']['id'])
+        correct_choice = question.choices.get(is_correct=True)
+        answer_path = f"/api/quiz/top-score/{payload['runId']}/answer/"
+        answer_body = json.dumps({'questionId': question.pk, 'choiceId': correct_choice.pk})
+
+        rejected = csrf_client.post(
+            answer_path,
+            answer_body,
+            content_type='application/json',
+        )
+        accepted = csrf_client.post(
+            answer_path,
+            answer_body,
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+
+        self.assertEqual(rejected.status_code, 403)
+        self.assertEqual(accepted.status_code, 200)
+        self.assertEqual(TopScoreResponse.objects.filter(run__client_run_id=payload['runId']).count(), 1)
 
     def test_topic_run_only_returns_questions_from_selected_topic(self):
         topic_slug = 'ancient-civilizations'
