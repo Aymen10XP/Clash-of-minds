@@ -20,6 +20,7 @@
     "evidence:generate": "node scripts/generate-quality-reports.mjs",
     "evidence:full": "node scripts/generate-quality-reports.mjs --include-e2e",
     "report:pdf": ".venv\\Scripts\\python.exe scripts\\generate-final-pdf.py",
+    "report:docx": "uv run --no-project --with python-docx==1.2.0 python scripts\\generate-final-docx.py",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
