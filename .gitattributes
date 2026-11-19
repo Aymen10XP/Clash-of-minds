@@ -1,0 +1,3 @@
+*.pdf binary
+reports/dast/** -whitespace
+reports/generated/** -whitespace

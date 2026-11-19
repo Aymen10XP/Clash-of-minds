@@ -1,0 +1,114 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@ionic/react-router": {
+      "name": "@ionic/react-router",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "react-router",
+        "react-router-dom"
+      ],
+      "effects": [],
+      "range": "8.8.1-dev.11772745200.1f0e21b1 - 8.8.1-dev.11773873479.192398dc || 8.8.4-dev.11775078622.1402ffa2 - 8.8.4-dev.11777318673.18d001f6 || 8.8.9-dev.11779403760.13ea2a08 - 8.8.9-dev.11780604658.184bb991 || 8.8.12-dev.11781793379.156d3260 - 8.8.12-dev.11782931922.18ba507c || 8.8.14-dev.11783455203.1cbca643 - 8.8.14-dev.11785507167.1f41b13b || 8.8.16-dev.11784840230.17f5a1f4 - 8.8.16-nightly.20260729 || 8.8.19-dev.11786610762.137bbb21 - 8.8.19-dev.11787076261.138d5922 || >=9.0.0",
+      "nodes": [
+        "node_modules/@ionic/react-router"
+      ],
+      "fixAvailable": {
+        "name": "@ionic/react-router",
+        "version": "8.8.20",
+        "isSemVerMajor": true
+      }
+    },
+    "react-router": {
+      "name": "react-router",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1124268,
+          "name": "react-router",
+          "dependency": "react-router",
+          "title": "React Router: Open redirect via backslash in <Link> and useNavigate (CVE-2025-68470 bypass)",
+          "url": "https://github.com/advisories/GHSA-wrjc-x8rr-h8h6",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-601"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=6.0.0 <7.18.0"
+        },
+        {
+          "source": 1124272,
+          "name": "react-router",
+          "dependency": "react-router",
+          "title": "React Router: Arbitrary Constructor Injection via deserializeErrors() in React Router SSR Hydration",
+          "url": "https://github.com/advisories/GHSA-337j-9hxr-rhxg",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-470"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=6.4.0 <7.18.0"
+        }
+      ],
+      "effects": [
+        "@ionic/react-router",
+        "react-router-dom"
+      ],
+      "range": "6.0.0 - 7.17.0",
+      "nodes": [
+        "node_modules/react-router"
+      ],
+      "fixAvailable": {
+        "name": "react-router",
+        "version": "8.5.2",
+        "isSemVerMajor": true
+      }
+    },
+    "react-router-dom": {
+      "name": "react-router-dom",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "react-router"
+      ],
+      "effects": [
+        "@ionic/react-router"
+      ],
+      "range": "6.0.0-alpha.0 - 7.17.0",
+      "nodes": [
+        "node_modules/react-router-dom"
+      ],
+      "fixAvailable": {
+        "name": "react-router-dom",
+        "version": "7.18.6",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 0,
+      "critical": 0,
+      "total": 3
+    },
+    "dependencies": {
+      "prod": 54,
+      "dev": 758,
+      "optional": 48,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 819
+    }
+  }
+}

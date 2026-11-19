@@ -1,0 +1,112 @@
+{
+  "generatedAt": "2026-11-19T16:11:29.750Z",
+  "platform": "win32-x64",
+  "node": "v24.21.0",
+  "successful": true,
+  "results": [
+    {
+      "name": "Client unit tests",
+      "command": "npm.cmd run test --workspace @mind-clash/client -- --reporter=default --reporter=junit --outputFile.junit=../reports/generated/tests/client-junit.xml",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:09:54.592Z",
+      "durationMs": 5544
+    },
+    {
+      "name": "Backend tests with coverage",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe -m coverage run manage.py test --settings=server.test_settings",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:00.136Z",
+      "durationMs": 13054
+    },
+    {
+      "name": "Backend coverage XML",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe -m coverage xml -o D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\reports\\generated\\coverage\\backend-coverage.xml",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:13.190Z",
+      "durationMs": 282
+    },
+    {
+      "name": "Backend coverage summary",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe -m coverage report",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:13.472Z",
+      "durationMs": 271
+    },
+    {
+      "name": "ESLint static analysis",
+      "command": "npm.cmd exec --workspace @mind-clash/client -- eslint . --format json --output-file reports/generated/security/eslint.json",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:13.743Z",
+      "durationMs": 4596
+    },
+    {
+      "name": "Bandit SAST",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe -m bandit -r accounts quiz multiplayer server -ll -ii -f json -o D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\reports\\generated\\security\\bandit.json",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:18.339Z",
+      "durationMs": 610
+    },
+    {
+      "name": "npm dependency audit",
+      "command": "npm.cmd audit --json",
+      "exitCode": 1,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:18.949Z",
+      "durationMs": 2183
+    },
+    {
+      "name": "Python runtime dependency audit",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe -m pip_audit -r server/requirements.txt -f json -o D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\reports\\generated\\security\\pip-audit-runtime.json",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:21.135Z",
+      "durationMs": 17344
+    },
+    {
+      "name": "Python development dependency audit",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe -m pip_audit -r server/requirements-dev.txt -f json -o D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\reports\\generated\\security\\pip-audit-dev.json",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:38.479Z",
+      "durationMs": 18198
+    },
+    {
+      "name": "Django deployment checks",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe manage.py check",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:56.677Z",
+      "durationMs": 563
+    },
+    {
+      "name": "Migration drift check",
+      "command": "D:\\tekup\\ing 5\\ionic\\Clash-of-minds\\.venv\\Scripts\\python.exe manage.py makemigrations --check --dry-run --settings=server.test_settings",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:57.240Z",
+      "durationMs": 510
+    },
+    {
+      "name": "Client production build",
+      "command": "npm.cmd run build --workspace @mind-clash/client",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:10:57.750Z",
+      "durationMs": 6857
+    },
+    {
+      "name": "Cypress Chrome and Firefox compatibility",
+      "command": "npm.cmd run test:e2e:compatibility",
+      "exitCode": 0,
+      "accepted": true,
+      "startedAt": "2026-11-19T16:11:04.607Z",
+      "durationMs": 25143
+    }
+  ]
+}

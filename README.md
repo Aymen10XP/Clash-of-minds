@@ -6,6 +6,8 @@ A real-time two-player trivia game for Android. Two players race to answer the s
 > **Platforms:** Android application; web-based administration
 > **Stack:** Ionic + React frontend; Django backend
 
+> **New developer?** Read [the current implementation guide](docs/CURRENT_IMPLEMENTATION.md) for the features that work today, local setup, gameplay rules, API routes, and testing instructions. This README also contains future-facing product specifications that are not all implemented yet.
+
 ---
 
 ## Table of Contents

@@ -46,8 +46,10 @@ Django Admin exposes model management for staff, including question/choice inlin
 ## Roles and access boundaries
 
 - **Player:** normal authenticated account. Can play, update permitted profile preferences, and view only authorized match data.
-- **Staff:** `is_staff=True`; can use the custom staff console and Django Admin permissions granted to the account.
-- **Superuser:** `is_superuser=True`; Django grants all model permissions. Create this role with `createsuperuser`; the demo seed intentionally creates only a player and a non-superuser staff account.
+- **Staff operator:** `is_staff=True`; can use the custom staff console and any explicitly granted Django Admin permissions.
+- **Superuser:** `is_superuser=True`; Django grants all model permissions and complete registered-model CRUD.
+
+`npm run seed:demo` creates one local demonstration account for each profile: `demo_player`, `demo_admin`, and `demo_superuser`.
 
 The role boundaries are enforced on the server. Hiding the admin navigation item in React is only a usability measure, not the authorization check.
 
@@ -58,7 +60,7 @@ The role boundaries are enforced on the server. Hiding the admin navigation item
 - **PostgreSQL:** the configured local application database supports relational integrity for account, quiz, and match relationships.
 - **SQLite test settings:** fast, self-contained tests that do not need a running PostgreSQL service; this is not proof of identical behavior under PostgreSQL.
 - **Vitest/Testing Library and Django TestCase:** component/API-facing client checks plus backend model/API integration tests.
-- **Cypress:** browser-level route and accessibility smoke checks. The spec exists, but this workstation’s Cypress binary did not start successfully, so its runtime evidence is pending.
+- **Cypress:** browser-level route, accessibility, login-error, and mobile-width checks. The official Cypress 16.3.0 Docker image passes all five journeys in both Chrome 157 and Firefox 160.
 
 ## Important business rules
 

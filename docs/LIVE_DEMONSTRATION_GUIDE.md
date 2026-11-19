@@ -1,146 +1,159 @@
-# Mind Clash: Live Demonstration Guide
+# Clash of Minds - Concise Live Demonstration Guide
 
-Use this as a 10–15 minute student presentation script. It gives you a repeatable local setup, a short product tour, two test layers to run live, and the evidence to show. Adjust the timing if your instructor assigns a different limit.
+Use this script for a 12-15 minute defense. Keep one terminal for the app, one for tests, Chrome for the player/staff UI, Firefox for the second player, and the reports folder open in the editor.
 
-## Before the presentation
-
-Have Node.js/npm, Python, Docker Desktop, Git, and the project dependencies installed. Make sure Docker is running. The project uses PostgreSQL for the local demo; the automated Django tests use SQLite and do not need a database service.
-
-From the repository root in PowerShell:
+## Prepare tonight
 
 ```powershell
-# Only needed if the local environment file has not been created yet
-Copy-Item server/.env.example server/.env
-
 npm install
-.venv\Scripts\python.exe -m pip install -r server/requirements.txt
-
-# Choose temporary demo passwords for this presentation. Do not reuse personal passwords.
-$env:DEMO_PLAYER_PASSWORD = 'Choose-A-Temporary-Player-Pass-2026!'
-$env:DEMO_ADMIN_PASSWORD = 'Choose-A-Temporary-Staff-Pass-2026!'
+.\.venv\Scripts\python.exe -m pip install -r server\requirements-dev.txt
 npm run seed:demo
+npm run evidence:full
 ```
 
-The seed command starts the PostgreSQL service, applies migrations, creates/upgrades `demo_player` and `demo_admin`, and loads quiz questions. The accounts have different access: the player is a normal account; the admin account is staff but not a superuser. If the instructor needs to see a third, distinct permission level, create a local superuser separately:
+Confirm Docker Desktop is running and these files open correctly:
 
-```powershell
-.venv\Scripts\python.exe manage.py createsuperuser
-```
+- `docs/FINAL_PROJECT_REPORT.md`
+- `docs/TRACEABILITY_MATRIX.md`
+- `docs/ISO25010_COMPLIANCE_REPORT.md`
+- `reports/dast/django-admin-active.html`
+- `reports/generated/coverage/backend-coverage.txt`
 
-Keep the passwords private and use only this local demo database. Do not use the seed accounts on a public deployment.
+Demo credentials are local only:
 
-## Start the application
+| Profile | Username | Default password |
+| --- | --- | --- |
+| Player | `demo_player` | `PlayerDemo!2026` |
+| Staff operator | `demo_admin` | `AdminDemo!2026` |
+| Superuser | `demo_superuser` | `SuperDemo!2026` |
 
-From the repository root:
+Run `npm run seed:demo` again tomorrow if anything was changed during rehearsal. It is idempotent.
+
+## Start five minutes before the defense
 
 ```powershell
 npm run dev
 ```
 
-Open `http://localhost:5173`. The Vite development server proxies `/api` requests to Django at `http://127.0.0.1:8000`. Keep the terminal visible so you can show service startup and API output.
+Open:
 
-If database startup fails, check Docker Desktop, `server/.env`, and port 5433. If the frontend cannot reach the API, check the Vite/Django output and confirm both dev tasks are running.
+- Chrome: `http://localhost:5173`
+- Firefox/private window: `http://localhost:5173`
+- Django Admin: `http://localhost:8000/admin/`
 
-## Presentation flow
+Keep the root of the repository visible in the editor so every claim can be tied to a file or generated report.
 
-### 1. Explain the problem and architecture (1 minute)
+## Presentation script
 
-Say: “Mind Clash is a trivia game. The Ionic React app handles navigation and interaction; Django validates answers and owns account permissions, quiz scoring, and multiplayer state. PostgreSQL stores the relational data.”
+### 1. Introduce the product and architecture - 1 minute
 
-Show [PROJECT_DESIGN.md](PROJECT_DESIGN.md) for the model relationships, role boundaries, and technology choices. Keep the explanation tied to what is implemented in this repository.
+Say:
 
-### 2. Demonstrate the player experience (2 minutes)
+> Clash of Minds is an Ionic/React trivia client backed by Django and PostgreSQL. Django owns permissions, scoring and multiplayer state; the client owns interaction and presentation. We evaluated the implemented application against all eight ISO/IEC 25010 quality characteristics requested in the brief.
 
-1. Sign in as `demo_player` with the temporary password you configured.
-2. Show the game-mode navigation and its accessible labels.
-3. Open **VS Bot**, choose a practice mode, and answer a question. Explain that score validation is performed by the backend for online play.
-4. Show the multiplayer screens if time allows.
+Show `docs/FINAL_PROJECT_REPORT.md`, sections 2 and 3. Point to the client, three Django domains, and PostgreSQL. Mention that the model contains twelve application entities, well above the four-entity minimum.
 
-For a full two-player invitation demonstration, open a second browser profile/private window, register a temporary second player, then use **Multiplayer → Friendly Match** in both profiles to search, invite, accept, and enter the match room. Registration requires unique email and username values. Keep both windows visible during the round.
+### 2. Prove the functional minimum - 3 minutes
 
-### 3. Demonstrate staff permissions, dashboard, and audit trail (2–3 minutes)
+Sign in as `demo_player`.
 
-1. Sign out and sign in as `demo_admin`.
-2. Open **Admin Console**. Point out the aggregate player/topic/question/match indicators and the audit-action filter.
-3. Add a disposable quiz question with four distinct answers and select its correct answer. Confirm the success message and the new `quiz.question.created` audit event.
-4. If desired, create a disposable player account and deactivate it to show the `accounts.user.deactivated` audit event. Do not deactivate the seeded demo account you still need.
-5. Sign in as a normal player and show that the staff console is unavailable. Explain that the API also checks staff permissions; hiding a button is not the security boundary.
-6. If you created a superuser, show `/admin/` separately and explain its broader Django permissions. Avoid editing/deleting data live unless you have time to restore it.
+1. Open VS Bot and start a practice game.
+2. Explain that Django verifies the selected choice and official score.
+3. Open Multiplayer and show player search/invitations.
+4. If both browser sessions are ready, invite the Firefox player, accept, ready both players, and answer one round.
 
-The dashboard API is `GET /api/auth/admin/dashboard/`; add `?action=quiz.question.created` to filter its audit event list.
+Say:
 
-### 4. Demonstrate two test layers (3–4 minutes)
+> The status workflows are invitation pending/accepted/declined/cancelled, match waiting/active/completed, round active/resolved, and quiz run active/finished/abandoned. Invalid or repeated transitions are rejected by the server.
 
-Keep the app demo terminal running. In a second PowerShell terminal at the repository root, run the frontend component/API suite:
+If the two-player live flow risks taking too long, show the screen and then point to the passing backend workflow tests instead.
+
+### 3. Prove three profiles, CRUD, dashboard and audit - 3 minutes
+
+Sign out and sign in as `demo_admin`.
+
+1. Open Admin Console.
+2. Show active user/topic/question indicators and matches grouped by status.
+3. Filter the audit list.
+4. Create a disposable question with four choices and one correct answer.
+5. Point to the new `quiz.question.created` audit event.
+
+Then open Django Admin as `demo_superuser` and show the model list. Open Topics or Questions to demonstrate complete create/read/update/delete administration.
+
+Say:
+
+> The three profiles are player, staff operator, and superuser. Rights are enforced in Django. The superuser has complete model CRUD; the staff operator has the safer daily console; the player cannot access either.
+
+Do not delete seeded records during the live defense.
+
+### 4. Run two test layers live - 3 minutes
+
+In the test terminal run:
 
 ```powershell
 npm run test --workspace @mind-clash/client
-```
-
-Then run the backend API/model integration suite:
-
-```powershell
 npm run test --workspace @mind-clash/server
 ```
 
-The client suite should report **31 tests** and the backend suite **66 tests** for the state recorded in [ISO25010_EVIDENCE.md](ISO25010_EVIDENCE.md). Counts may change as tests are added. Highlight a few readable names, such as replay rejection, cross-question choice rejection, staff-only dashboard access, and player-search query-count stability.
+Expected current totals are 31 client tests and 66 backend tests.
 
-Explain the layers simply: the first suite checks frontend behavior in a simulated browser; the second sends requests through Django and checks database outcomes. These are not the Cypress real-browser suite.
+Explain:
 
-### 5. State the quality evidence and limits (1 minute)
+> The first layer checks React components and client API behavior in jsdom. The second sends requests through Django and verifies database results, authorization, status transitions, replay protection and constraints.
 
-Show [ISO25010_EVIDENCE.md](ISO25010_EVIDENCE.md). Report only the measurements recorded there: 80% backend application-code coverage with the stated exclusions, passing build/lint/tests, and Bandit results. Tell the audience that load testing, dependency scans, DAST, cross-browser/device execution, and user accessibility acceptance still need results from a suitable environment. This honesty follows the brief’s rule against claiming unrun tests.
-
-## Optional checks to prepare evidence before the presentation
-
-### Backend coverage report
-
-After installing `server/requirements-dev.txt`, run:
+If time permits, run one real-browser layer:
 
 ```powershell
-python -m coverage run manage.py test --settings=server.test_settings
-python -m coverage report
-python -m coverage html
+npm run test:e2e
 ```
 
-Open `htmlcov/index.html`. The checked-in `.coveragerc` excludes test files, migrations, admin modules, app setup, and URL wiring from the percentage.
+Mention that the committed compatibility log contains the same five tests passing in both Chrome and Firefox.
 
-### SAST and dependency scanning
+### 5. Present the ISO 25010 evidence - 3 minutes
 
-```powershell
-python -m bandit -r accounts quiz multiplayer server -ll -ii
-python -m pip_audit -r server/requirements.txt --cache-dir .tool-cache/pip-audit
-npm audit --omit=dev --audit-level=high
-```
+Open `docs/ISO25010_COMPLIANCE_REPORT.md` and summarize this table verbally:
 
-Dependency scans need access to package advisory registries. Save their real outputs and list any unresolved findings; never present a failed network request as a clean scan.
+| Characteristic | One sentence to say |
+| --- | --- |
+| Functional suitability | Required workflows passed 66 backend, 31 client, and cross-browser E2E tests. |
+| Performance | k6 measured 4.75 ms player-search p95 at 20 users, below 500 ms, with 0% failures. |
+| Compatibility | Five Cypress journeys passed in Chrome 157 and Firefox 160. |
+| Usability | Labels, error announcement and phone-width layout passed browser checks. |
+| Reliability | Replay, offline retry/idempotency, timer, forfeit, rematch and deletion cases are tested. |
+| Security | Role/CSRF tests, Bandit, dependency audits and ZAP ran; findings remain disclosed. |
+| Maintainability | Lint/build/checks passed and backend application coverage is 80%. |
+| Portability | Docker Compose, seeded data and one evidence command reproduce the environment. |
 
-### Performance run
+Open `docs/TRACEABILITY_MATRIX.md` and say:
 
-Install k6 and start the local app with seeded data. In a separate PowerShell window:
+> This is the required traceability chain: requirement, implementation, test/tool, actual result and evidence path.
 
-```powershell
-$env:DEMO_PLAYER_PASSWORD = 'the-temporary-demo-player-password'
-$env:BASE_URL = 'http://127.0.0.1:8000'
-$env:VUS = '20'
-$env:DURATION = '1m'
-k6 run tests/performance/player-search.js
-```
+### 6. Explain findings honestly - 1 minute
 
-The script checks player-search p95 below 500 ms and failures below 1%. Record the machine, database, seed size, and actual k6 output. A local development result is not a production capacity guarantee.
+Show the ZAP HTML report and npm audit JSON.
 
-## Troubleshooting and backup plan
+Say:
 
-- **Cypress startup problem:** the recorded workstation error is an installed Cypress binary rejecting `--smoke-test` and `--ping`. On a machine with network access, try `npm exec --workspace @mind-clash/client -- cypress install --force`, then rerun `npm run test:e2e --workspace @mind-clash/client`. If startup still fails, state that the E2E spec is authored but could not run, then show the passing client and Django suites. Do not call them browser E2E tests.
-- **Database/demo data problem:** restart PostgreSQL with `npm run db:up`, check `.env`, and rerun `npm run seed:demo`. Avoid running demo seed against production.
-- **No second account:** skip the invitation flow; show VS Bot and the backend multiplayer API tests instead.
-- **Time is short:** keep the order architecture → player flow → staff dashboard/audit → two test suites → honest limitations.
+> We do not claim formal ISO certification or zero vulnerabilities. Python audits and medium/high Bandit checks are clean. npm reports three moderate router advisories. ZAP reports zero failing alerts and seven warnings on the local HTTP development server. These are documented follow-up items, not hidden results.
 
-## Evidence to save after the live run
+Also mention the large frontend bundle warning and that Story/Ranked are optional placeholders outside the professor's minimum requirements.
 
-- A screenshot of the player experience and staff dashboard (hide email addresses or other personal data).
-- Terminal output for both test commands, lint/build, and any scan actually completed.
-- Test/device/browser versions and the result of each manual check.
-- Any defect found, its impact, and whether it was fixed or remains open.
+## How to explain each requested document
 
-Do not label the project “ISO certified.” The deliverable is a documented quality evaluation against the student brief, supported by reproducible evidence.
+| Document | What to tell the professor |
+| --- | --- |
+| Final project report | Architecture, entities, roles, workflows, technology choices and delivery inventory |
+| Traceability matrix | Every brief requirement links to implementation, tool/test, result and evidence |
+| ISO compliance report | One concrete requirement and executed proof for each of the eight characteristics |
+| Installation guide | A third party can install, seed, run, test and stop the project from exact commands |
+| `reports/` | Raw generated evidence: JUnit, coverage, logs, security JSON, k6 and ZAP HTML/JSON |
+
+## Backup plan
+
+- App startup failure: show `reports/generated/summary.json`, the reports, and run the self-contained tests.
+- Database failure: run `npm run db:up`, then `npm run seed:demo`.
+- Second-browser flow failure: show the Chrome/Firefox Cypress log and backend multiplayer tests.
+- Internet failure: all committed evidence remains local; do not rerun registry-dependent audits.
+- Short time: demonstrate architecture, one player flow, staff/audit, two test commands, and the ISO table.
+
+> Every shown result comes from an executable test or generated report; warnings stay explicit and no evidence is invented.

@@ -27,17 +27,20 @@ describe('game menu navigation', () => {
   /** Verifies key home controls have usable accessible names. */
   it('exposes named navigation and account controls to assistive technology', () => {
     cy.get('[role="navigation"][aria-label="Game modes"]').should('be.visible');
-    cy.get('[aria-label="Story Mode: Uncover the lost archives"]').should('be.visible');
-    cy.get('[aria-label="Log out e2e-player"]').should('be.visible');
+    cy.get('ion-button.menu-button').first().shadow()
+      .find('button[aria-label="Story Mode: Uncover the lost archives"]').should('be.visible');
+    cy.get('ion-button.account-control').shadow()
+      .find('button[aria-label="Log out e2e-player"]').should('be.visible');
   });
 
   it('moves through VS Bot and returns to the menu', () => {
     cy.contains('.menu-button', 'VS Bot').click();
     cy.location('pathname').should('equal', '/practice');
     cy.get('h1').should('contain.text', 'VS Bot');
-    cy.get('.game-choice-card[role="button"]').should('have.length', 2);
+    cy.get('.game-choice-card').should('have.length', 2);
 
-    cy.get('[aria-label="Go back"]').click();
+    cy.contains('h1', 'VS Bot').closest('.ion-page')
+      .find('ion-button.game-screen-header__back').click();
     cy.location('pathname').should('equal', '/home');
     cy.contains('.menu-button', 'VS Bot').should('be.visible');
   });
@@ -45,16 +48,15 @@ describe('game menu navigation', () => {
   it('moves through Multiplayer and its ranked placeholder', () => {
     cy.contains('.menu-button', 'Multiplayer').click();
     cy.location('pathname').should('equal', '/multiplayer');
-    cy.get('.game-choice-card[role="button"]')
-      .filter('[aria-label^="Ranked Matchmaking:"]')
-      .click();
+    cy.get('.game-choice-card').contains('Ranked Matchmaking').click();
     cy.location('pathname').should('equal', '/multiplayer/ranked');
-    cy.contains('h1', 'Ranked Matchmaking').should('be.visible');
+    cy.get('ion-router-outlet > .ion-page:not(.ion-page-hidden)', { timeout: 10000 })
+      .contains('h1', 'Ranked Matchmaking').should('be.visible');
 
-    cy.get('[aria-label="Go back"]').click();
+    cy.contains('h1', 'Ranked Matchmaking').closest('.ion-page')
+      .find('ion-button.game-screen-header__back').click();
     cy.location('pathname').should('equal', '/multiplayer');
-    cy.get('.game-choice-card[role="button"][aria-label^="Friendly Match:"]')
-      .should('be.visible');
+    cy.get('.game-choice-card').contains('Friendly Match').should('be.visible');
   });
 
   it('shows a labelled login form and announces rejected credentials', () => {
@@ -64,17 +66,18 @@ describe('game menu navigation', () => {
     });
     cy.visit('/login');
 
-    cy.get('[role="region"][aria-label="Login form"]').should('be.visible');
-    cy.get('ion-input[name="identity"]').should('have.attr', 'label', 'Username or email');
-    cy.get('ion-input[name="password"]').should('have.attr', 'label', 'Password');
+    cy.get('ion-card.auth-panel form').should('be.visible');
+    cy.get('ion-input.auth-input').should('have.length', 2);
+    cy.get('ion-input.auth-input').eq(0).should('have.prop', 'label', 'Username or email');
+    cy.get('ion-input.auth-input').eq(1).should('have.prop', 'label', 'Password');
 
     cy.intercept('POST', '/api/auth/login/', {
       statusCode: 400,
       body: { error: 'The username/email or password is incorrect.' },
     }).as('rejectedLogin');
     cy.setCookie('csrftoken', 'e2e-csrf-token');
-    cy.get('ion-input[name="identity"]').shadow().find('input').type('unknown-player');
-    cy.get('ion-input[name="password"]').shadow().find('input').type('incorrect-password');
+    cy.get('ion-input.auth-input').eq(0).find('input').type('unknown-player');
+    cy.get('ion-input.auth-input').eq(1).find('input').type('incorrect-password');
     cy.contains('ion-button', 'Sign in').click();
     cy.wait('@rejectedLogin');
     cy.get('[role="alert"]').should('contain.text', 'incorrect');

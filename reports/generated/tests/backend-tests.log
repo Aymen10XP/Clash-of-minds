@@ -1,0 +1,46 @@
+Found 66 test(s).
+System check identified no issues (0 silenced).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+
+Demo database is ready.
+  Player: demo_player / test-player-password-47 (created)
+  Staff:  demo_admin / test-admin-password-84 (created)
+  Root:   demo_superuser / test-superuser-password-93 (created)
+  Quiz:   6 topics, 30 active questions
+  Admin console: /admin-console
+  Django Admin:  /admin/
+Seeded 6 topics and 30 questions (0 created, 30 updated).
+
+Demo database is ready.
+  Player: demo_player / test-player-password-47 (updated)
+  Staff:  demo_admin / test-admin-password-84 (updated)
+  Root:   demo_superuser / test-superuser-password-93 (updated)
+  Quiz:   6 topics, 30 active questions
+  Admin console: /admin-console
+  Django Admin:  /admin/
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (0 created, 30 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (0 created, 30 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Seeded 6 topics and 30 questions (30 created, 0 updated).
+Creating test database for alias 'default'...
+..............Bad Request: /api/auth/password-reset/confirm/
+Bad Request: /api/auth/password-reset/confirm/
+...Bad Request: /api/auth/password-reset/confirm/
+.................................................
+----------------------------------------------------------------------
+Ran 66 tests in 11.295s
+
+OK
+Destroying test database for alias 'default'...

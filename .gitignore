@@ -145,6 +145,8 @@ htmlcov/
 .tox/
 .nox/
 client/coverage/
+client/cypress/screenshots/
+client/cypress/videos/
 *.lcov
 
 # --------------------------------------------
@@ -204,5 +206,11 @@ tmp/
 !/docs/ISO25010_EVIDENCE.pdf
 !/docs/PROJECT_DESIGN.md
 !/docs/LIVE_DEMONSTRATION_GUIDE.md
+!/docs/CURRENT_IMPLEMENTATION.md
+!/docs/FINAL_PROJECT_REPORT.md
+!/docs/TRACEABILITY_MATRIX.md
+!/docs/ISO25010_COMPLIANCE_REPORT.md
+!/docs/INSTALLATION_AND_EXECUTION_GUIDE.md
+!/reports/**/*.log
 *.tsbuildinfo
 .tool-cache/

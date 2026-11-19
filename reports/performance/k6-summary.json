@@ -1,0 +1,160 @@
+{
+    "metrics": {
+        "vus_max": {
+            "value": 20,
+            "min": 20,
+            "max": 20
+        },
+        "vus": {
+            "value": 20,
+            "min": 0,
+            "max": 20
+        },
+        "http_req_receiving": {
+            "avg": 0.07510379260450167,
+            "min": 0.024708,
+            "med": 0.0521215,
+            "max": 0.696636,
+            "p(90)": 0.11583679999999999,
+            "p(95)": 0.1627749499999996
+        },
+        "checks": {
+            "passes": 1184,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_blocked": {
+            "max": 3.546866,
+            "p(90)": 0.004307,
+            "p(95)": 0.009152499999999992,
+            "avg": 0.07401905627009657,
+            "min": 0.001343,
+            "med": 0.002595
+        },
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "max": 2.839358,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.0676151302250804
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 622,
+            "value": 0
+        },
+        "http_reqs": {
+            "count": 622,
+            "rate": 19.495805389316224
+        },
+        "http_req_waiting": {
+            "avg": 28.67310846945337,
+            "min": 0.827191,
+            "med": 3.7260299999999997,
+            "max": 859.828907,
+            "p(90)": 4.509976099999999,
+            "p(95)": 5.217814049999992
+        },
+        "player_search_duration": {
+            "min": 3.44809,
+            "med": 3.8065215,
+            "max": 28.52127,
+            "p(90)": 4.4819259,
+            "p(95)": 4.758406299999999,
+            "avg": 3.985900250859111,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "data_sent": {
+            "rate": 4053.873771435053,
+            "count": 129336
+        },
+        "iteration_duration": {
+            "min": 1003.589382,
+            "med": 1004.5372649999999,
+            "max": 2657.799714,
+            "p(90)": 1005.3616364,
+            "p(95)": 1005.986961,
+            "avg": 1047.8262632130593
+        },
+        "http_req_duration": {
+            "avg": 28.75762983922823,
+            "min": 0.889442,
+            "med": 3.8065215,
+            "max": 859.892466,
+            "p(90)": 4.6390281,
+            "p(95)": 5.320562199999995
+        },
+        "player_search_failures": {
+            "passes": 0,
+            "fails": 582,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "data_received": {
+            "count": 266188,
+            "rate": 8343.327081947438
+        },
+        "http_req_sending": {
+            "avg": 0.009417577170418004,
+            "min": 0.004569,
+            "med": 0.006498,
+            "max": 0.056515,
+            "p(90)": 0.018188,
+            "p(95)": 0.022930449999999995
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 28.75762983922823,
+            "min": 0.889442,
+            "med": 3.8065215,
+            "max": 859.892466,
+            "p(90)": 4.6390281,
+            "p(95)": 5.320562199999995
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iterations": {
+            "count": 582,
+            "rate": 18.242055846594923
+        }
+    },
+    "root_group": {
+        "checks": {
+            "demo account login succeeds": {
+                "passes": 20,
+                "fails": 0,
+                "name": "demo account login succeeds",
+                "path": "::demo account login succeeds",
+                "id": "f38f58344330dfb8e2012e7860832908"
+            },
+            "player search returns HTTP 200": {
+                "name": "player search returns HTTP 200",
+                "path": "::player search returns HTTP 200",
+                "id": "431d02c67e34a316dafc3674ed0bd9f1",
+                "passes": 582,
+                "fails": 0
+            },
+            "player search returns a players list": {
+                "fails": 0,
+                "name": "player search returns a players list",
+                "path": "::player search returns a players list",
+                "id": "d5bc80d1b95559e5b563c2c9228caf9e",
+                "passes": 582
+            }
+        },
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {}
+    }
+}

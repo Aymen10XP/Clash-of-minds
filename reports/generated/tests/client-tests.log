@@ -1,0 +1,56 @@
+
+> @mind-clash/client@0.0.1 test
+> vitest run --configLoader native --reporter=default --reporter=junit --outputFile.junit=../reports/generated/tests/client-junit.xml
+
+
+ RUN  v4.1.12 D:/tekup/ing 5/ionic/Clash-of-minds/client
+
+ ✓ src/features/auth/storage.test.ts (3 tests) 6ms
+ ✓ src/features/quiz/api.test.ts (3 tests) 16ms
+ ✓ src/features/sync/api.test.ts (2 tests) 15ms
+ ✓ src/features/quiz/offline.test.ts (1 test) 7ms
+ ✓ src/features/auth/api.test.ts (2 tests) 12ms
+ ✓ src/features/profile/camera.test.ts (2 tests) 4ms
+ ✓ src/features/auth/AuthGate.test.tsx (4 tests) 56ms
+ ✓ src/pages/admin/AdminConsole.test.tsx (1 test) 95ms
+ ✓ src/pages/multiplayer/match/MatchRoom.test.tsx (2 tests) 253ms
+ ✓ src/pages/practice/Practice.test.tsx (2 tests) 241ms
+ ✓ src/pages/multiplayer/Multiplayer.test.tsx (3 tests) 268ms
+ ✓ src/App.test.tsx (2 tests) 208ms
+ ✓ src/pages/login/Login.test.tsx (4 tests) 917ms
+   ✓ filters countries by name and stores the selected country code  483ms
+
+ Test Files  13 passed (13)
+      Tests  31 passed (31)
+   Start at  17:09:55
+   Duration  4.09s (transform 10.76s, setup 2.81s, import 13.56s, tests 2.10s, environment 9.17s)
+
+JUNIT report written to D:/tekup/ing 5/ionic/Clash-of-minds/reports/generated/tests/client-junit.xml
+stderr | src/features/auth/AuthGate.test.tsx > redirects anonymous users away from protected routes to login
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/admin/AdminConsole.test.tsx > keeps the admin console mounted while editing every answer
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/multiplayer/match/MatchRoom.test.tsx > renders the synchronized duel and submits an answer
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/multiplayer/Multiplayer.test.tsx > opens the ranked matchmaking placeholder
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/login/Login.test.tsx > renders login fields and reports rejected credentials
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/practice/Practice.test.tsx > starts a top-score run with the selected topic
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/App.test.tsx > renders the main game menu
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+

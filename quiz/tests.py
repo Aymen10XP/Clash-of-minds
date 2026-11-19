@@ -223,6 +223,7 @@ class SeedDemoCommandTests(TestCase):
         options = {
             'player_password': 'test-player-password-47',
             'admin_password': 'test-admin-password-84',
+            'superuser_password': 'test-superuser-password-93',
             'verbosity': 0,
         }
         call_command('seed_demo', **options)
@@ -230,6 +231,7 @@ class SeedDemoCommandTests(TestCase):
 
         player = User.objects.get(username='demo_player')
         admin = User.objects.get(username='demo_admin')
+        superuser = User.objects.get(username='demo_superuser')
 
         self.assertTrue(player.check_password(options['player_password']))
         self.assertFalse(player.is_staff)
@@ -238,12 +240,21 @@ class SeedDemoCommandTests(TestCase):
         self.assertTrue(admin.is_staff)
         self.assertFalse(admin.is_superuser)
         self.assertTrue(admin.is_active)
+        self.assertTrue(superuser.check_password(options['superuser_password']))
+        self.assertTrue(superuser.is_staff)
+        self.assertTrue(superuser.is_superuser)
+        self.assertTrue(superuser.is_active)
         self.assertEqual(player.favorite_topics.count(), 4)
         self.assertEqual(
             set(player.favorite_topics.values_list('slug', flat=True)),
             set(admin.favorite_topics.values_list('slug', flat=True)),
         )
-        self.assertEqual(User.objects.filter(username__in=('demo_player', 'demo_admin')).count(), 2)
+        self.assertEqual(
+            User.objects.filter(
+                username__in=('demo_player', 'demo_admin', 'demo_superuser'),
+            ).count(),
+            3,
+        )
         self.assertEqual(Topic.objects.count(), 6)
         self.assertEqual(Question.objects.filter(is_active=True).count(), 30)
         for question in Question.objects.prefetch_related('choices'):

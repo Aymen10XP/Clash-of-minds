@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="31" failures="0" errors="0" time="2.0985733">
+    <testsuite name="src/App.test.tsx" timestamp="2026-11-19T16:10:00.052Z" hostname="Buraq" tests="2" failures="0" errors="0" skipped="0" time="0.2077855">
+        <testcase classname="src/App.test.tsx" name="renders the main game menu" time="0.1474729">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="redirects anonymous visitors to login without rendering the menu" time="0.0583433">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/auth/api.test.ts" timestamp="2026-11-19T16:10:00.053Z" hostname="Buraq" tests="2" failures="0" errors="0" skipped="0" time="0.0117299">
+        <testcase classname="src/features/auth/api.test.ts" name="bootstraps a missing CSRF cookie before login" time="0.0088607">
+        </testcase>
+        <testcase classname="src/features/auth/api.test.ts" name="requests and confirms a password reset through the auth API" time="0.0016291">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/auth/AuthGate.test.tsx" timestamp="2026-11-19T16:10:00.054Z" hostname="Buraq" tests="4" failures="0" errors="0" skipped="0" time="0.0559163">
+        <testcase classname="src/features/auth/AuthGate.test.tsx" name="redirects anonymous users away from protected routes to login" time="0.0189278">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/features/auth/AuthGate.test.tsx" name="redirects authenticated users away from public-only routes to home" time="0.0021998">
+        </testcase>
+        <testcase classname="src/features/auth/AuthGate.test.tsx" name="allows staff to open the protected staff route and redirects ordinary users home" time="0.0029749">
+        </testcase>
+        <testcase classname="src/features/auth/AuthGate.test.tsx" name="shows a session status while authentication is still loading" time="0.0301736">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/auth/storage.test.ts" timestamp="2026-11-19T16:10:00.055Z" hostname="Buraq" tests="3" failures="0" errors="0" skipped="0" time="0.0063306">
+        <testcase classname="src/features/auth/storage.test.ts" name="round trips the cached account profile without storing credentials" time="0.0028179">
+        </testcase>
+        <testcase classname="src/features/auth/storage.test.ts" name="returns no profile and clears malformed cached JSON safely" time="0.0005487">
+        </testcase>
+        <testcase classname="src/features/auth/storage.test.ts" name="keeps cache helpers safe when browser storage throws" time="0.0017217">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/profile/camera.test.ts" timestamp="2026-11-19T16:10:00.055Z" hostname="Buraq" tests="2" failures="0" errors="0" skipped="0" time="0.0041743">
+        <testcase classname="src/features/profile/camera.test.ts" name="profile camera integration &gt; converts a Capacitor media result into an uploadable data URL" time="0.0029507">
+        </testcase>
+        <testcase classname="src/features/profile/camera.test.ts" name="profile camera integration &gt; recognizes native camera and gallery cancellation errors" time="0.0003001">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/quiz/api.test.ts" timestamp="2026-11-19T16:10:00.056Z" hostname="Buraq" tests="3" failures="0" errors="0" skipped="0" time="0.0155843">
+        <testcase classname="src/features/quiz/api.test.ts" name="starts an online Top Score run with the requested topic" time="0.011649">
+        </testcase>
+        <testcase classname="src/features/quiz/api.test.ts" name="starts from cached questions when the device is offline" time="0.0012948">
+        </testcase>
+        <testcase classname="src/features/quiz/api.test.ts" name="does not hide an online API validation error by switching to offline play" time="0.0015423">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/quiz/offline.test.ts" timestamp="2026-11-19T16:10:00.057Z" hostname="Buraq" tests="1" failures="0" errors="0" skipped="0" time="0.0067439">
+        <testcase classname="src/features/quiz/offline.test.ts" name="plays from the cached catalogue and queues a server-verifiable result" time="0.0057255">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/features/sync/api.test.ts" timestamp="2026-11-19T16:10:00.057Z" hostname="Buraq" tests="2" failures="0" errors="0" skipped="0" time="0.0154979">
+        <testcase classname="src/features/sync/api.test.ts" name="uploads queued offline runs and removes only server-acknowledged run ids" time="0.0124339">
+        </testcase>
+        <testcase classname="src/features/sync/api.test.ts" name="keeps queued runs when the server rejects synchronization" time="0.0018761">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/admin/AdminConsole.test.tsx" timestamp="2026-11-19T16:10:00.058Z" hostname="Buraq" tests="1" failures="0" errors="0" skipped="0" time="0.0949349">
+        <testcase classname="src/pages/admin/AdminConsole.test.tsx" name="keeps the admin console mounted while editing every answer" time="0.093304">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/login/Login.test.tsx" timestamp="2026-11-19T16:10:00.058Z" hostname="Buraq" tests="4" failures="0" errors="0" skipped="0" time="0.9167417">
+        <testcase classname="src/pages/login/Login.test.tsx" name="renders login fields and reports rejected credentials" time="0.1601836">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/pages/login/Login.test.tsx" name="moves from login to the registration screen" time="0.2386561">
+        </testcase>
+        <testcase classname="src/pages/login/Login.test.tsx" name="opens the forgot-password form from login" time="0.0322482">
+        </testcase>
+        <testcase classname="src/pages/login/Login.test.tsx" name="filters countries by name and stores the selected country code" time="0.4834768">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/multiplayer/Multiplayer.test.tsx" timestamp="2026-11-19T16:10:00.059Z" hostname="Buraq" tests="3" failures="0" errors="0" skipped="0" time="0.2684705">
+        <testcase classname="src/pages/multiplayer/Multiplayer.test.tsx" name="opens the ranked matchmaking placeholder" time="0.1316362">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/pages/multiplayer/Multiplayer.test.tsx" name="returns from a multiplayer destination with backward navigation" time="0.0659747">
+        </testcase>
+        <testcase classname="src/pages/multiplayer/Multiplayer.test.tsx" name="opens the friendly match lobby foundation" time="0.0685425">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/practice/Practice.test.tsx" timestamp="2026-11-19T16:10:00.060Z" hostname="Buraq" tests="2" failures="0" errors="0" skipped="0" time="0.2413065">
+        <testcase classname="src/pages/practice/Practice.test.tsx" name="starts a top-score run with the selected topic" time="0.2004778">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/pages/practice/Practice.test.tsx" name="starts an unrestricted top-score run from the main practice mode" time="0.0386153">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/pages/multiplayer/match/MatchRoom.test.tsx" timestamp="2026-11-19T16:10:00.060Z" hostname="Buraq" tests="2" failures="0" errors="0" skipped="0" time="0.253357">
+        <testcase classname="src/pages/multiplayer/match/MatchRoom.test.tsx" name="renders the synchronized duel and submits an answer" time="0.2158599">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/pages/multiplayer/match/MatchRoom.test.tsx" name="returns to the friendly lobby when the room has been terminated" time="0.0352041">
+        </testcase>
+    </testsuite>
+</testsuites>

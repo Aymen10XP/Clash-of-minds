@@ -11,10 +11,11 @@ from quiz.models import Question, Topic
 
 DEFAULT_PLAYER_PASSWORD = 'PlayerDemo!2026'
 DEFAULT_ADMIN_PASSWORD = 'AdminDemo!2026'
+DEFAULT_SUPERUSER_PASSWORD = 'SuperDemo!2026'
 
 
 class Command(BaseCommand):
-    help = 'Seed a complete local demo with a player, an admin, topics, questions, and answers.'
+    help = 'Seed a complete local demo with player, staff, superuser, topics, questions, and answers.'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -26,6 +27,11 @@ class Command(BaseCommand):
             '--admin-password',
             default=os.environ.get('DEMO_ADMIN_PASSWORD', DEFAULT_ADMIN_PASSWORD),
             help='Password for demo_admin (or set DEMO_ADMIN_PASSWORD).',
+        )
+        parser.add_argument(
+            '--superuser-password',
+            default=os.environ.get('DEMO_SUPERUSER_PASSWORD', DEFAULT_SUPERUSER_PASSWORD),
+            help='Password for demo_superuser (or set DEMO_SUPERUSER_PASSWORD).',
         )
         parser.add_argument(
             '--allow-production',
@@ -67,9 +73,22 @@ class Command(BaseCommand):
         admin.set_password(options['admin_password'])
         admin.save()
 
+        superuser, superuser_created = user_model.objects.get_or_create(
+            username='demo_superuser',
+            defaults={'email': 'superuser@clashofminds.local', 'country': 'TN'},
+        )
+        superuser.email = 'superuser@clashofminds.local'
+        superuser.country = 'TN'
+        superuser.is_active = True
+        superuser.is_staff = True
+        superuser.is_superuser = True
+        superuser.set_password(options['superuser_password'])
+        superuser.save()
+
         shared_topics = list(Topic.objects.filter(is_active=True).order_by('sort_order', 'title')[:4])
         player.favorite_topics.set(shared_topics)
         admin.favorite_topics.set(shared_topics)
+        superuser.favorite_topics.set(shared_topics)
 
         self.stdout.write('')
         self.stdout.write(self.style.SUCCESS('Demo database is ready.'))
@@ -78,11 +97,16 @@ class Command(BaseCommand):
             f"({'created' if player_created else 'updated'})"
         )
         self.stdout.write(
-            f"  Admin:  demo_admin / {options['admin_password']} "
+            f"  Staff:  demo_admin / {options['admin_password']} "
             f"({'created' if admin_created else 'updated'})"
+        )
+        self.stdout.write(
+            f"  Root:   demo_superuser / {options['superuser_password']} "
+            f"({'created' if superuser_created else 'updated'})"
         )
         self.stdout.write(
             f'  Quiz:   {Topic.objects.count()} topics, '
             f'{Question.objects.filter(is_active=True).count()} active questions'
         )
         self.stdout.write('  Admin console: /admin-console')
+        self.stdout.write('  Django Admin:  /admin/')

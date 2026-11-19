@@ -15,6 +15,11 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "test:e2e:docker": "npm run test:e2e:docker --workspace @mind-clash/client",
+    "test:e2e:compatibility": "npm run test:e2e:compatibility --workspace @mind-clash/client",
+    "evidence:generate": "node scripts/generate-quality-reports.mjs",
+    "evidence:full": "node scripts/generate-quality-reports.mjs --include-e2e",
+    "report:pdf": ".venv\\Scripts\\python.exe scripts\\generate-final-pdf.py",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
@@ -24,7 +29,7 @@
     "turbo": "2.11.5"
   },
   "allowScripts": {
-    "cypress@13.17.0": true,
+    "cypress@16.3.0": true,
     "esbuild@0.28.2": true,
     "core-js@3.50.0": true
   }
