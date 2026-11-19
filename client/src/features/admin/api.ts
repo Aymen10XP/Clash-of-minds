@@ -17,6 +17,24 @@ export type NewQuestion = {
   isActive: boolean;
 };
 
+export type AdminDashboard = {
+  indicators: {
+    activeUsers: number;
+    activeTopics: number;
+    activeQuestions: number;
+    matchesByStatus: Record<string, number>;
+  };
+  auditEvents: {
+    id: number;
+    actor: string | null;
+    action: string;
+    targetType: string;
+    targetId: string;
+    details: Record<string, unknown>;
+    createdAt: string;
+  }[];
+};
+
 const cookie = (name: string) => document.cookie
   .split(';')
   .map((part) => part.trim())
@@ -45,6 +63,10 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<T> =
 };
 
 export const fetchAdminUsers = () => request<{ users: AdminUser[] }>('/api/auth/admin/users/');
+
+export const fetchAdminDashboard = (action = '') => request<AdminDashboard>(
+  `/api/auth/admin/dashboard/${action ? `?action=${encodeURIComponent(action)}` : ''}`,
+);
 
 export const deactivateUser = (userId: number) => request<{ userId: number; isActive: false }>(
   `/api/auth/admin/users/${userId}/deactivate/`,

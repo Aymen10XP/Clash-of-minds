@@ -201,3 +201,8 @@ tmp/
 !/docs/
 /docs/*
 !/docs/TESTING_AND_CODE_COMMENTS.md
+!/docs/ISO25010_EVIDENCE.md
+!/docs/PROJECT_DESIGN.md
+!/docs/LIVE_DEMONSTRATION_GUIDE.md
+*.tsbuildinfo
+.tool-cache/

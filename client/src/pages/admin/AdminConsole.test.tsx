@@ -10,7 +10,11 @@ beforeEach(() => {
   fetchMock.mockReset();
   fetchMock.mockResolvedValue({
     ok: true,
-    json: async () => ({ users: [] }),
+    json: async () => ({
+      users: [],
+      indicators: { activeUsers: 0, activeTopics: 0, activeQuestions: 0, matchesByStatus: {} },
+      auditEvents: [],
+    }),
   });
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -31,6 +35,8 @@ test('keeps the admin console mounted while editing every answer', async () => {
     container.querySelectorAll<HTMLInputElement>('.admin-answer input:not([type="radio"])'),
   );
   expect(answerInputs).toHaveLength(4);
+  expect(container.textContent).toContain('Project dashboard');
+  expect(container.querySelector('.admin-indicators')).not.toBeNull();
 
   ['Mercury', 'Venus', 'Earth', 'Mars'].forEach((answer, index) => {
     fireEvent.change(answerInputs[index], { target: { value: answer } });

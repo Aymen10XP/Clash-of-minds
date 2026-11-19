@@ -7,9 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run --configLoader native",
     "test:e2e": "cypress run",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run --configLoader native",
     "lint": "eslint"
   },
   "dependencies": {

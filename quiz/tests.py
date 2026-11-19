@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
-from accounts.models import User
+from accounts.models import AuditEvent, User
 
 from .models import AnswerChoice, Question, Topic, TopScoreResponse, TopScoreRun
 
@@ -508,6 +508,11 @@ class AdminQuestionApiTests(TestCase):
         self.assertTrue(question.is_active)
         self.assertEqual(question.choices.count(), 4)
         self.assertEqual(question.choices.get(is_correct=True).text, 'Mars')
+        self.assertTrue(AuditEvent.objects.filter(
+            actor=self.staff,
+            action='quiz.question.created',
+            target_id=str(question.pk),
+        ).exists())
 
     def test_non_staff_cannot_create_question(self):
         self.client.force_login(self.player)

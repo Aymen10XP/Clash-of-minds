@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { IonButton } from '@ionic/react';
 import GameSubpage from '../../components/game/GameSubpage';
-import { createQuestion, deactivateUser, fetchAdminUsers, type AdminUser } from '../../features/admin/api';
+import { createQuestion, deactivateUser, fetchAdminDashboard, fetchAdminUsers, type AdminDashboard, type AdminUser } from '../../features/admin/api';
 import { practiceTopics } from '../../features/practice/topics';
 import { usePressNavigation } from '../../hooks/usePressNavigation';
 import { appRoutes } from '../../routing/routes';
@@ -12,6 +12,8 @@ const emptyChoices = ['', '', '', ''];
 const AdminConsole: React.FC = () => {
   const { goBackAfterPress } = usePressNavigation({ delay: 140, feedback: 'light' });
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
+  const [auditAction, setAuditAction] = useState('');
   const [prompt, setPrompt] = useState('');
   const [topicSlug, setTopicSlug] = useState(practiceTopics[0].id);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
@@ -22,14 +24,18 @@ const AdminConsole: React.FC = () => {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     const response = await fetchAdminUsers();
     setUsers(response.users);
-  };
+  }, []);
+
+  const loadDashboard = useCallback(async (action = '') => {
+    setDashboard(await fetchAdminDashboard(action));
+  }, []);
 
   useEffect(() => {
-    void loadUsers().catch((loadError) => setError(loadError instanceof Error ? loadError.message : 'Unable to load users.'));
-  }, []);
+    void Promise.all([loadUsers(), loadDashboard('')]).catch((loadError) => setError(loadError instanceof Error ? loadError.message : 'Unable to load administrator data.'));
+  }, [loadDashboard, loadUsers]);
 
   const submitQuestion = async (event: FormEvent) => {
     event.preventDefault();
@@ -38,6 +44,7 @@ const AdminConsole: React.FC = () => {
     setNotice('');
     try {
       await createQuestion({ topicSlug, prompt, explanation, difficulty, choices, correctChoiceIndex, isActive: true });
+      await loadDashboard(auditAction);
       setPrompt('');
       setExplanation('');
       setChoices([...emptyChoices]);
@@ -60,6 +67,7 @@ const AdminConsole: React.FC = () => {
     try {
       await deactivateUser(user.id);
       setUsers((current) => current.map((item) => item.id === user.id ? { ...item, isActive: false } : item));
+      await loadDashboard(auditAction);
       setNotice(`${user.username} was deactivated.`);
     } catch (deactivateError) {
       setError(deactivateError instanceof Error ? deactivateError.message : 'Unable to deactivate user.');
@@ -69,6 +77,32 @@ const AdminConsole: React.FC = () => {
   return (
     <GameSubpage eyebrow="Staff access" title="Admin Console" onBack={() => goBackAfterPress(appRoutes.home)} className="admin-page">
       <div className="admin-layout">
+        <section className="admin-panel" aria-labelledby="admin-dashboard-title">
+          <h2 id="admin-dashboard-title">Project dashboard</h2>
+          <div className="admin-indicators" aria-label="Project indicators">
+            <div><strong>{dashboard?.indicators?.activeUsers ?? '—'}</strong><span>Active players</span></div>
+            <div><strong>{dashboard?.indicators?.activeTopics ?? '—'}</strong><span>Active topics</span></div>
+            <div><strong>{dashboard?.indicators?.activeQuestions ?? '—'}</strong><span>Active questions</span></div>
+            <div><strong>{Object.values(dashboard?.indicators?.matchesByStatus ?? {}).reduce((sum, value) => sum + value, 0)}</strong><span>Total matches</span></div>
+          </div>
+          <label className="audit-filter">Filter audit actions
+            <select value={auditAction} onChange={(event) => {
+              const action = event.currentTarget.value;
+              setAuditAction(action);
+              void loadDashboard(action).catch((loadError) => setError(loadError instanceof Error ? loadError.message : 'Unable to filter audit events.'));
+            }}>
+              <option value="">All recent actions</option>
+              <option value="quiz.question.created">Question created</option>
+              <option value="accounts.user.deactivated">User deactivated</option>
+            </select>
+          </label>
+          <ul className="audit-events" aria-label="Recent audit events">
+            {dashboard?.auditEvents.map((event) => (
+              <li key={event.id}><strong>{event.action}</strong><span>{event.actor ?? 'Deleted account'} · {event.targetType} #{event.targetId}</span></li>
+            ))}
+            {dashboard?.auditEvents.length === 0 && <li>No matching audit events.</li>}
+          </ul>
+        </section>
         <section className="admin-panel">
           <h2>Add a quiz question</h2>
           <form className="admin-form" onSubmit={submitQuestion}>

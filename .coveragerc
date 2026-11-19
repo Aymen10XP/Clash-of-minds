@@ -1,0 +1,16 @@
+[run]
+branch = True
+source =
+    accounts
+    quiz
+    multiplayer
+omit =
+    */tests.py
+    */migrations/*
+    */admin.py
+    */apps.py
+    */urls.py
+
+[report]
+show_missing = True
+skip_empty = True

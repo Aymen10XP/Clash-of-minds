@@ -11,15 +11,20 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
-from django.db import IntegrityError
-from django.db.models import Prefetch
+from django.db import IntegrityError, transaction
+from django.db.models import Count, Prefetch
 from django.http import JsonResponse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
+from multiplayer.models import KnowledgeMatch
+from quiz.models import Question
+
+from .audit import record_audit_event
 from .forms import ProfileUpdateForm, RegistrationForm
+from .models import AuditEvent
 from quiz.models import Topic
 
 
@@ -213,6 +218,7 @@ def admin_users_view(request):
 
 
 @require_POST
+@transaction.atomic
 def deactivate_user_view(request, user_id):
     denied = _staff_required(request)
     if denied:
@@ -227,7 +233,49 @@ def deactivate_user_view(request, user_id):
         return JsonResponse({'error': 'A superuser cannot be deactivated here.'}, status=400)
     user.is_active = False
     user.save(update_fields=('is_active',))
+    record_audit_event(
+        actor=request.user,
+        action='accounts.user.deactivated',
+        target_type='accounts.User',
+        target_id=user.pk,
+    )
     return JsonResponse({'message': 'User deactivated.', 'userId': user.pk, 'isActive': False})
+
+
+@require_GET
+def admin_dashboard_view(request):
+    """Return staff-only aggregate indicators and a filterable recent audit trail."""
+    denied = _staff_required(request)
+    if denied:
+        return denied
+
+    action_filter = request.GET.get('action', '').strip()[:64]
+    events = AuditEvent.objects.select_related('actor')
+    if action_filter:
+        events = events.filter(action=action_filter)
+    events = events.order_by('-created_at', '-pk')[:20]
+
+    return JsonResponse({
+        'indicators': {
+            'activeUsers': get_user_model().objects.filter(is_active=True, is_staff=False).count(),
+            'activeTopics': Topic.objects.filter(is_active=True).count(),
+            'activeQuestions': Question.objects.filter(is_active=True).count(),
+            'matchesByStatus': {
+                row['status']: row['total']
+                for row in KnowledgeMatch.objects.values('status').annotate(total=Count('pk'))
+            },
+        },
+        'auditEvents': [{
+            'id': event.pk,
+            'actor': event.actor.username if event.actor else None,
+            'action': event.action,
+            'targetType': event.target_type,
+            'targetId': event.target_id,
+            'details': event.details,
+            'createdAt': event.created_at.isoformat(),
+        } for event in events],
+        'actionFilter': action_filter,
+    })
 
 
 @require_POST

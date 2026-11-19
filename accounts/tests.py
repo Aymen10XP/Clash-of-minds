@@ -2,13 +2,15 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.admin.sites import site
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase, override_settings
+from django.test import Client, RequestFactory, TestCase, override_settings
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from accounts.models import AuditEvent
 from quiz.models import Topic
 
 
@@ -346,6 +348,45 @@ class AdminUserApiTests(TestCase):
         self.player.refresh_from_db()
         self.assertFalse(self.player.is_active)
         self.assertTrue(get_user_model().objects.filter(pk=self.player.pk).exists())
+        event = AuditEvent.objects.get(action='accounts.user.deactivated')
+        self.assertEqual(event.actor, self.staff)
+        self.assertEqual(event.target_id, str(self.player.pk))
+
+    def test_staff_dashboard_returns_aggregates_and_filtered_audit_events(self):
+        self.client.force_login(self.staff)
+        AuditEvent.objects.create(
+            actor=self.staff,
+            action='accounts.user.deactivated',
+            target_type='accounts.User',
+            target_id=self.player.pk,
+        )
+        AuditEvent.objects.create(
+            actor=self.staff,
+            action='quiz.question.created',
+            target_type='quiz.Question',
+            target_id='42',
+        )
+
+        response = self.client.get('/api/auth/admin/dashboard/?action=quiz.question.created')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('activeUsers', response.json()['indicators'])
+        self.assertEqual(len(response.json()['auditEvents']), 1)
+        self.assertEqual(response.json()['auditEvents'][0]['action'], 'quiz.question.created')
+
+    def test_non_staff_cannot_view_dashboard_or_audit_events(self):
+        self.client.force_login(self.player)
+        self.assertEqual(self.client.get('/api/auth/admin/dashboard/').status_code, 403)
+
+    def test_audit_admin_is_read_only_and_visible_to_staff(self):
+        model_admin = site._registry[AuditEvent]
+        request = RequestFactory().get('/admin/accounts/auditevent/')
+        request.user = self.staff
+
+        self.assertTrue(model_admin.has_view_permission(request))
+        self.assertFalse(model_admin.has_add_permission(request))
+        self.assertFalse(model_admin.has_change_permission(request))
+        self.assertFalse(model_admin.has_delete_permission(request))
 
     def test_non_staff_cannot_manage_users(self):
         self.client.force_login(self.player)

@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
+from accounts.audit import record_audit_event
 from .models import AnswerChoice, Question, Topic, TopScoreResponse, TopScoreRun
 
 
@@ -115,6 +116,13 @@ def create_question_view(request):
         )
     question.is_active = bool(data.get('isActive', True))
     question.save()
+    record_audit_event(
+        actor=request.user,
+        action='quiz.question.created',
+        target_type='quiz.Question',
+        target_id=question.pk,
+        details={'topic': topic.slug, 'is_active': question.is_active},
+    )
     return JsonResponse({
         'question': {
             'id': question.pk,
