@@ -19,6 +19,7 @@ class Command(BaseCommand):
             TopScoreRun.SelectionMode.RANDOM_CONTROL,
             TopScoreRun.SelectionMode.HISTORY,
             TopScoreRun.SelectionMode.NEURAL,
+            TopScoreRun.SelectionMode.SYNTHETIC,
         )
         rows = TopScoreRun.objects.filter(selection_mode__in=modes).annotate(
             response_count=Count('responses', distinct=True),
@@ -49,7 +50,14 @@ class Command(BaseCommand):
             )
             response_accuracy = correct / responses if responses else 0.0
             completion_rate = completed / total_runs if total_runs else 0.0
-            sample = 'sufficient for a cautious comparison' if total_runs >= options['minimum_runs'] else 'too small to interpret'
+            if mode == TopScoreRun.SelectionMode.SYNTHETIC:
+                sample = 'synthetic-only descriptive results; not real-world evidence'
+            else:
+                sample = (
+                    'sufficient for a cautious comparison'
+                    if total_runs >= options['minimum_runs']
+                    else 'too small to interpret'
+                )
             self.stdout.write(
                 f'{mode}: runs={total_runs}, responses={responses}, '
                 f'mean_run_accuracy={mean_run_accuracy:.3f}, '
@@ -60,4 +68,8 @@ class Command(BaseCommand):
         self.stdout.write(
             'Compare adaptive groups with random_control only after each reaches '
             f"{options['minimum_runs']} runs. This observational summary is not a causal claim."
+        )
+        self.stdout.write(
+            'synthetic is generated demonstration data; do not compare it with real-player '
+            'groups or report it as observed player performance.'
         )

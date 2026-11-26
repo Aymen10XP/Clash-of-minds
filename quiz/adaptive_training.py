@@ -1,4 +1,4 @@
-"""Build chronological, pre-answer training rows from real quiz history only."""
+"""Build chronological, pre-answer rows from real or opt-in synthetic history."""
 
 from collections import defaultdict
 
@@ -11,6 +11,7 @@ TRAINING_MODES = (
     TopScoreRun.SelectionMode.HISTORY,
     TopScoreRun.SelectionMode.NEURAL,
 )
+SYNTHETIC_MODE = TopScoreRun.SelectionMode.SYNTHETIC
 
 
 def _empty_stats():
@@ -26,7 +27,7 @@ def _record_response(stats, is_correct, response_time_ms):
     ) / stats['count']
 
 
-def build_training_rows():
+def build_training_rows(include_synthetic=False):
     """Return chronological features, labels, topic vocabulary, and player IDs.
 
     Feature values are generated before each response is added to history. Rows
@@ -35,6 +36,7 @@ def build_training_rows():
     """
     topic_slugs = list(Topic.objects.order_by('slug').values_list('slug', flat=True))
     topic_indices = {slug: index + 1 for index, slug in enumerate(topic_slugs)}
+    eligible_modes = TRAINING_MODES + ((SYNTHETIC_MODE,) if include_synthetic else ())
     player_stats = defaultdict(_empty_stats)
     player_topic_stats = defaultdict(_empty_stats)
     question_stats = defaultdict(_empty_stats)
@@ -47,6 +49,12 @@ def build_training_rows():
         'run', 'run__user', 'question', 'question__topic',
     ).order_by('answered_at', 'pk')
     for response in responses.iterator(chunk_size=1000):
+        is_synthetic = (
+            response.run.selection_mode == TopScoreRun.SelectionMode.SYNTHETIC
+        )
+        if is_synthetic != include_synthetic:
+            continue
+
         player_id = response.run.user_id
         topic_id = response.question.topic_id
         player_key = player_id
@@ -55,7 +63,7 @@ def build_training_rows():
         topic_history = player_topic_stats[topic_key]
         question_history = question_stats[response.question_id]
 
-        if response.run.selection_mode in TRAINING_MODES:
+        if response.run.selection_mode in eligible_modes:
             features.append(feature_vector(
                 response.question.difficulty,
                 player_history,

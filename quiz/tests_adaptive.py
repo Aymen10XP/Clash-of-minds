@@ -3,9 +3,13 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
-from quiz.adaptive import choose_selection_mode, select_adaptive_question
+from quiz.adaptive import (
+    _checkpoint_is_allowed,
+    choose_selection_mode,
+    select_adaptive_question,
+)
 from quiz.adaptive_features import feature_vector, history_probability
 from quiz.models import TopScoreRun
 
@@ -79,3 +83,18 @@ class AdaptiveAssignmentTests(SimpleTestCase):
                 choose_selection_mode(),
                 TopScoreRun.SelectionMode.NEURAL,
             )
+
+
+class AdaptiveCheckpointSafetyTests(SimpleTestCase):
+    """Keep checkpoints trained on generated responses opt-in for live inference."""
+
+    @override_settings(ADAPTIVE_ALLOW_EXPERIMENTAL_MODEL=False)
+    def test_experimental_checkpoint_is_blocked_by_default(self):
+        self.assertFalse(_checkpoint_is_allowed({'experimental': True}))
+
+    @override_settings(ADAPTIVE_ALLOW_EXPERIMENTAL_MODEL=True)
+    def test_experimental_checkpoint_can_be_enabled_explicitly(self):
+        self.assertTrue(_checkpoint_is_allowed({'experimental': True}))
+
+    def test_checkpoint_without_experimental_label_remains_allowed(self):
+        self.assertTrue(_checkpoint_is_allowed({'experimental': False}))

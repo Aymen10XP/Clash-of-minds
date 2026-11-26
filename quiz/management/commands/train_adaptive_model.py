@@ -19,6 +19,11 @@ class Command(BaseCommand):
         parser.add_argument('--min-responses', type=int, default=200)
         parser.add_argument('--min-players', type=int, default=8)
         parser.add_argument('--epochs', type=int, default=100)
+        parser.add_argument(
+            '--include-synthetic',
+            action='store_true',
+            help='Train on explicitly labeled synthetic responses for experimentation only.',
+        )
 
     def handle(self, *args, **options):
         try:
@@ -29,7 +34,9 @@ class Command(BaseCommand):
                 'PyTorch is optional. Install requirements-ml.txt before training.'
             ) from error
 
-        topic_slugs, topic_ids, features, labels, player_ids = build_training_rows()
+        topic_slugs, topic_ids, features, labels, player_ids = build_training_rows(
+            include_synthetic=options['include_synthetic'],
+        )
         if len(features) < options['min_responses']:
             raise CommandError(
                 f'Only {len(features)} eligible real responses are available; '
@@ -93,11 +100,16 @@ class Command(BaseCommand):
         output = Path(
             options['output']
             or os.environ.get('ADAPTIVE_MODEL_PATH')
-            or Path(settings.BASE_DIR) / 'var' / 'adaptive_question_model.pt'
+            or Path(settings.BASE_DIR) / 'var' / (
+                'adaptive_question_model_experimental.pt'
+                if options['include_synthetic']
+                else 'adaptive_question_model.pt'
+            )
         )
         output.parent.mkdir(parents=True, exist_ok=True)
         checkpoint = {
             'feature_version': FEATURE_VERSION,
+            'experimental': options['include_synthetic'],
             'topic_slugs': topic_slugs,
             'state_dict': best_state,
             'training_examples': split,
@@ -109,7 +121,16 @@ class Command(BaseCommand):
         history_predictions = [history_probability(row) for row in features[split:]]
         history_metrics = self._metrics(history_predictions, labels[split:])
         self.stdout.write(self.style.SUCCESS('Adaptive model trained and saved.'))
-        self.stdout.write(f'Eligible real responses: {len(features)}')
+        if options['include_synthetic']:
+            self.stdout.write(self.style.WARNING(
+                'This checkpoint was trained on generated responses. It is for '
+                'experimentation only and is blocked from normal model loading by default.'
+            ))
+        self.stdout.write(f'Training responses: {len(features)}')
+        if options['include_synthetic']:
+            self.stdout.write('Training data: generated synthetic experiment only')
+        else:
+            self.stdout.write('Training data: recorded real gameplay only')
         self.stdout.write(f'Chronological training / validation: {split} / {len(features) - split}')
         self.stdout.write(f'Players in training period: {len(train_players)}')
         self.stdout.write(f'Checkpoint: {output}')

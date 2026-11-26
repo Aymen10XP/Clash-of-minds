@@ -10,7 +10,7 @@ Without PyTorch or a trained checkpoint, the app uses a smoothed history-based p
 
 ## Data and model safeguards
 
-- Training reads saved `TopScoreResponse` records from `random_control`, `history`, and `neural` runs. It does not invent examples or use a generated dataset.
+- By default, training reads only saved `TopScoreResponse` records from `random_control`, `history`, and `neural` runs. Generated responses are included only with the explicit `--include-synthetic` option.
 - Each training row uses only answers recorded before that response, including prior overall/topic performance, average response time, and question history.
 - The trainer requires at least 200 eligible responses and 8 players by default. It refuses to save a model below either threshold.
 - Validation uses the latest 20% of responses in time order. It reports Brier score, threshold accuracy, mean predicted accuracy, and actual accuracy beside the history baseline.
@@ -32,6 +32,19 @@ The current question set and response history may not meet the minimum. The trai
 .venv\Scripts\python.exe manage.py train_adaptive_model --settings=server.settings
 ```
 
+### Experimental generated data
+
+For a classroom demonstration before real responses exist, seed the starter quiz and generate a separate synthetic cohort:
+
+```powershell
+.venv\Scripts\python.exe manage.py seed_quiz
+.venv\Scripts\python.exe manage.py generate_adaptive_demo_data
+.venv\Scripts\python.exe manage.py train_adaptive_model --include-synthetic
+.venv\Scripts\python.exe manage.py evaluate_adaptive
+```
+
+The generator replaces only runs labeled `synthetic`, creates disabled accounts with an `adaptive_synthetic_` prefix, and samples outcomes from a simulated skill/difficulty process. The trained checkpoint is named `var/adaptive_question_model_experimental.pt` by default. The application refuses to load experimental checkpoints unless `ADAPTIVE_ALLOW_EXPERIMENTAL_MODEL=true` is set explicitly. Synthetic results appear in their own evaluation group and must not be described as real player outcomes or proof of improvement.
+
 Use `ADAPTIVE_MODEL_PATH` to choose another checkpoint path and set the same variable for the running Django process. `ADAPTIVE_RANDOM_CONTROL_RATE` sets the randomized comparison share; it defaults to `0.10` and is clamped to 0–1.
 
 ## Evaluate prediction quality and game outcomes
@@ -44,7 +57,7 @@ After at least 30 runs per group have accumulated, report actual response accura
 .venv\Scripts\python.exe manage.py evaluate_adaptive --settings=server.settings
 ```
 
-The report shows run count, response count, mean per-run accuracy, overall response accuracy, and completion rate (`finished` runs divided by all runs in that group). If a group has fewer than 30 runs, it is explicitly marked too small to interpret. Compare `history` and `neural` with `random_control`; report group sizes and dates, and do not claim improvement unless the observed outcomes support it. For stronger evidence, keep the comparison period long enough to reduce random variation and compare player cohorts over the same period.
+The report shows run count, response count, mean per-run accuracy, overall response accuracy, and completion rate (`finished` runs divided by all runs in that group). If a real-player group has fewer than 30 runs, it is explicitly marked too small to interpret. Compare `history` and `neural` with `random_control`; report group sizes and dates, and do not claim improvement unless observed player outcomes support it. Synthetic results are marked descriptive and are never evidence of player benefit.
 
 ## Limitations
 

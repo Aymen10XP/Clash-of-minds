@@ -25,6 +25,13 @@ def _model_path():
     return Path(settings.BASE_DIR) / 'var' / 'adaptive_question_model.pt'
 
 
+def _checkpoint_is_allowed(checkpoint):
+    """Keep synthetic experiment weights out of normal inference by default."""
+    return not checkpoint.get('experimental', False) or getattr(
+        settings, 'ADAPTIVE_ALLOW_EXPERIMENTAL_MODEL', False,
+    )
+
+
 @lru_cache(maxsize=2)
 def _load_model(path, modified_ns):
     try:
@@ -34,6 +41,8 @@ def _load_model(path, modified_ns):
 
         checkpoint = torch.load(path, map_location='cpu', weights_only=True)
         if checkpoint.get('feature_version') != FEATURE_VERSION:
+            return None
+        if not _checkpoint_is_allowed(checkpoint):
             return None
         topic_slugs = checkpoint.get('topic_slugs', [])
         model = AdaptiveQuestionNetwork(topic_count=len(topic_slugs) + 1)
@@ -101,7 +110,9 @@ def _stats_by(queryset, field):
 
 
 def _feature_context(user, questions):
-    responses = TopScoreResponse.objects.all()
+    responses = TopScoreResponse.objects.exclude(
+        run__selection_mode=TopScoreRun.SelectionMode.SYNTHETIC,
+    )
     player_responses = responses.filter(run__user_id=user.pk)
     player = _as_stats(player_responses.aggregate(
         count=Count('pk'),

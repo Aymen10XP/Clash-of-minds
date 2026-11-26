@@ -147,6 +147,7 @@ class TopScoreRun(models.Model):
         HISTORY = 'history', 'History-based adaptive selection'
         NEURAL = 'neural', 'Neural adaptive selection'
         OFFLINE = 'offline', 'Offline selection'
+        SYNTHETIC = 'synthetic', 'Synthetic experimental data'
 
     class Status(models.TextChoices):
         ACTIVE = 'active', 'Active'
