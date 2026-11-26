@@ -87,6 +87,18 @@ npm run evidence:full
 
 Outputs are written under `reports/generated/`. The command runs tests, coverage, static analysis, dependency audits, framework checks, build verification, and both Cypress browsers. npm audit returns a non-zero advisory status when findings exist; the generator records and accepts that status so the findings remain visible in `npm-audit.json`.
 
+## Optional adaptive question model
+
+Online Top Score uses the history-based adaptive selector by default. Install PyTorch and train an experimental model only after the database has enough genuine gameplay history:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements-ml.txt
+.venv\Scripts\python.exe manage.py train_adaptive_model --settings=server.settings
+.venv\Scripts\python.exe manage.py evaluate_adaptive --settings=server.settings
+```
+
+The trainer requires 200 eligible real responses from at least 8 players and does not create synthetic samples. It writes `var/adaptive_question_model.pt`; the Django process must use the same database and `ADAPTIVE_MODEL_PATH` if the checkpoint is stored elsewhere. See [the adaptive model guide](ADAPTIVE_QUESTION_SELECTION.md) for its chronological validation, randomized comparison group, and interpretation limits.
+
 ## 7. Performance test
 
 Keep Django running with `host.docker.internal` allowed:

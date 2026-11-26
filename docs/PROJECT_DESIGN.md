@@ -61,6 +61,7 @@ The role boundaries are enforced on the server. Hiding the admin navigation item
 - **SQLite test settings:** fast, self-contained tests that do not need a running PostgreSQL service; this is not proof of identical behavior under PostgreSQL.
 - **Vitest/Testing Library and Django TestCase:** component/API-facing client checks plus backend model/API integration tests.
 - **Cypress:** browser-level route, accessibility, login-error, and mobile-width checks. The official Cypress 16.3.0 Docker image passes all five journeys in both Chrome 157 and Firefox 160.
+- **Optional PyTorch:** a small CPU-friendly model estimates question success probability from topic, difficulty, prior accuracy, response times, and question history. Until a trained real-data checkpoint exists, the service uses its history-based fallback and records randomized control runs for evaluation. See [the adaptive selection guide](ADAPTIVE_QUESTION_SELECTION.md).
 
 ## Important business rules
 

@@ -160,3 +160,5 @@ EMAIL_USE_TLS = os.environ.get('DJANGO_EMAIL_USE_TLS', 'False').lower() in {'1',
 DEFAULT_FROM_EMAIL = os.environ.get('DJANGO_DEFAULT_FROM_EMAIL', 'noreply@clashofminds.local')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 PASSWORD_RESET_TIMEOUT = int(os.environ.get('DJANGO_PASSWORD_RESET_TIMEOUT', '3600'))
+ADAPTIVE_RANDOM_CONTROL_RATE = os.environ.get('ADAPTIVE_RANDOM_CONTROL_RATE', '0.10')
+ADAPTIVE_MODEL_PATH = os.environ.get('ADAPTIVE_MODEL_PATH', '')

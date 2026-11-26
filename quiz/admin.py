@@ -41,10 +41,10 @@ class QuestionAdmin(admin.ModelAdmin):
 
 @admin.register(TopScoreRun)
 class TopScoreRunAdmin(admin.ModelAdmin):
-    list_display = ('user', 'score', 'status', 'end_reason', 'started_at', 'ended_at')
-    list_filter = ('status', 'end_reason')
+    list_display = ('user', 'score', 'selection_mode', 'status', 'end_reason', 'started_at', 'ended_at')
+    list_filter = ('selection_mode', 'status', 'end_reason')
     search_fields = ('user__username', 'user__email', 'client_run_id')
-    readonly_fields = ('client_run_id', 'started_at')
+    readonly_fields = ('client_run_id', 'selection_mode', 'started_at')
 
 
 @admin.register(TopScoreResponse)

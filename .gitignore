@@ -211,6 +211,7 @@ tmp/
 !/docs/TRACEABILITY_MATRIX.md
 !/docs/ISO25010_COMPLIANCE_REPORT.md
 !/docs/INSTALLATION_AND_EXECUTION_GUIDE.md
+!/docs/ADAPTIVE_QUESTION_SELECTION.md
 !/reports/**/*.log
 *.tsbuildinfo
 .tool-cache/

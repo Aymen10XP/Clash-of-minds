@@ -13,6 +13,7 @@ Execution date for the recorded evidence: 19 November 2026. Evidence paths are r
 | F-05 | Search/filter on a high-volume entity | Indexed player search by username; bounded results; audit-action filtering | Django query-count regression; k6 | Query count remains bounded; 582 searches, 4.75 ms p95, 0% failures |
 | F-06 | Audit log for sensitive actions | Append-only `AuditEvent` stores actor, action, target, details, timestamp | User-deactivation and question-creation tests | Events created and dashboard filter tested |
 | F-07 | At least five explicit business rules | Unique account email; valid active-question structure; one response per run question; run status consistency; no self-invite; one pending invitation; participant-only match access; one answer per player/round; server-owned scoring | Django unit/integration tests | 66 backend tests passed |
+| F-08 | Personalized practice question selection | Online Top Score uses recent player/topic accuracy and response times, question history, and difficulty to target a 70% estimated success rate; selection mode is recorded per run | `quiz/tests_adaptive.py`; `train_adaptive_model`; `evaluate_adaptive` | History fallback/control and model-training workflow implemented. No trained checkpoint or player-outcome improvement is claimed until real history reaches the documented threshold. |
 
 ## ISO/IEC 25010 requirements
 

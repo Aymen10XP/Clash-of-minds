@@ -1,0 +1,3 @@
+# Optional CPU/GPU package for the adaptive question model and training command.
+-r server/requirements.txt
+torch>=2.7,<3
