@@ -1,6 +1,6 @@
 # Clash of Minds: Current Implementation Guide
 
-Last updated: October 14, 2026
+Last updated: November 26, 2026
 
 This document explains what is implemented in Clash of Minds today. It is written for developers who are new to Ionic, React, or Django and need a practical map of the project before changing it.
 
@@ -13,6 +13,7 @@ The current application supports:
 - Account registration, login, logout, and session restoration.
 - A top-score practice mode using all quiz categories.
 - A category practice mode using questions from one selected category.
+- Adaptive online practice based on saved accuracy, response time, topic, and question history. A PyTorch model can replace the cold-start history estimator once enough real responses are available.
 - Offline practice after the player has logged in online at least once.
 - Local storage of completed offline games.
 - Automatic synchronization of offline games when connectivity returns.
@@ -21,6 +22,8 @@ The current application supports:
 - An Ionic web build and an existing Capacitor Android project.
 
 Ranked matchmaking, story mode, bots, WebSockets, and production deployment are not implemented yet.
+
+The adaptive neural model is experimental and is not active until trained on enough real player responses. The application remains usable with the history-based selector while that data is collected. See [Adaptive Question Selection](ADAPTIVE_QUESTION_SELECTION.md) for training and evaluation steps.
 
 ## 2. The architecture in plain language
 

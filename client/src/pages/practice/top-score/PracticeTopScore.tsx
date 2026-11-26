@@ -7,6 +7,7 @@ import {
   answerTopScore,
   quitTopScore,
   startTopScore,
+  type QuestionSelectionMode,
   type QuizQuestion,
 } from '../../../features/quiz/api';
 import { playAnswerFeedback } from '../../../features/quiz/feedback';
@@ -28,6 +29,7 @@ const PracticeTopScore: React.FC = () => {
   const [runId, setRunId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [selectionMode, setSelectionMode] = useState<QuestionSelectionMode>('history');
   const [remainingMs, setRemainingMs] = useState(FALLBACK_TIME_LIMIT);
   const [selectedChoiceId, setSelectedChoiceId] = useState<number | null>(null);
   const [correctChoiceId, setCorrectChoiceId] = useState<number | null>(null);
@@ -63,6 +65,7 @@ const PracticeTopScore: React.FC = () => {
       setRunId(game.runId);
       setScore(game.score);
       setBestScore(game.bestScore);
+      setSelectionMode(game.selectionMode ?? 'history');
       timeLimitRef.current = game.timeLimitMs;
       beginQuestion(game.question);
     } catch (caught) {
@@ -88,6 +91,7 @@ const PracticeTopScore: React.FC = () => {
       const result = await answerTopScore(runId, question.id, choiceId);
       setScore(result.score);
       setBestScore(result.bestScore);
+      if (result.selectionMode) setSelectionMode(result.selectionMode);
       setCorrectChoiceId(result.correctChoiceId);
       setTimedOut(result.timedOut);
       changePhase('feedback');
@@ -124,6 +128,13 @@ const PracticeTopScore: React.FC = () => {
 
   const timerSeconds = Math.ceil(remainingMs / 1000);
   const progress = Math.max(0, Math.min(1, remainingMs / timeLimitRef.current));
+  const selectionMessage = {
+    neural: 'Experimental model selection is balancing challenge near your current level.',
+    history: 'Adaptive practice is using your recent accuracy and response times.',
+    random_control: 'This run uses randomized questions for the practice comparison.',
+    offline: 'Offline practice is using your saved question pack.',
+    legacy: 'Practice is using the standard question order.',
+  }[selectionMode];
 
   return (
     <GameSubpage
@@ -146,6 +157,10 @@ const PracticeTopScore: React.FC = () => {
         <div className="top-score-game__timer" aria-label={`${timerSeconds} seconds remaining`}>
           <span style={{ transform: `scaleX(${progress})` }} />
         </div>
+
+      <p className="top-score-game__selection-note" role="status" aria-live="polite">
+        {selectionMessage}
+      </p>
 
         {phase === 'loading' && (
           <div className="top-score-game__status">

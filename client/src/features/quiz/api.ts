@@ -15,11 +15,14 @@ export type QuizQuestion = {
   choices: QuizChoice[];
 };
 
+export type QuestionSelectionMode = 'random_control' | 'history' | 'neural' | 'offline' | 'legacy';
+
 export type TopScoreStart = {
   runId: string;
   score: number;
   bestScore: number;
   timeLimitMs: number;
+  selectionMode?: QuestionSelectionMode;
   question: QuizQuestion;
 };
 
@@ -31,6 +34,7 @@ export type TopScoreAnswer = {
   bestScore: number;
   gameOver: boolean;
   endReason?: 'wrong_answer' | 'timeout';
+  selectionMode?: QuestionSelectionMode;
   question?: QuizQuestion;
 };
 
@@ -78,12 +82,14 @@ const post = async <T>(path: string, body: object = {}): Promise<T> => {
 };
 
 export const startTopScore = async (topicSlug?: string) => {
-  if (navigator.onLine === false) return startOfflineTopScore(topicSlug);
+  if (navigator.onLine === false) {
+    return { ...startOfflineTopScore(topicSlug), selectionMode: 'offline' as const };
+  }
   try {
     return await post<TopScoreStart>('top-score/start/', topicSlug ? { topicSlug } : {});
   } catch (error) {
     if (!(error instanceof TypeError)) throw error;
-    return startOfflineTopScore(topicSlug);
+    return { ...startOfflineTopScore(topicSlug), selectionMode: 'offline' as const };
   }
 };
 
@@ -93,7 +99,10 @@ export const answerTopScore = (
   choiceId: number | null,
 ) => (
   hasOfflineRun(runId)
-    ? Promise.resolve(answerOfflineTopScore(runId, questionId, choiceId))
+    ? Promise.resolve({
+      ...answerOfflineTopScore(runId, questionId, choiceId),
+      selectionMode: 'offline' as const,
+    })
     : post<TopScoreAnswer>(`top-score/${runId}/answer/`, { questionId, choiceId })
 );
 

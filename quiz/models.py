@@ -141,6 +141,14 @@ class AnswerChoice(models.Model):
 
 
 class TopScoreRun(models.Model):
+    class SelectionMode(models.TextChoices):
+        LEGACY = 'legacy', 'Legacy random selection'
+        RANDOM_CONTROL = 'random_control', 'Randomized comparison'
+        HISTORY = 'history', 'History-based adaptive selection'
+        NEURAL = 'neural', 'Neural adaptive selection'
+        OFFLINE = 'offline', 'Offline selection'
+        SYNTHETIC = 'synthetic', 'Synthetic experimental data'
+
     class Status(models.TextChoices):
         ACTIVE = 'active', 'Active'
         FINISHED = 'finished', 'Finished'
@@ -165,6 +173,12 @@ class TopScoreRun(models.Model):
         blank=True,
         help_text='Limits the run to one topic when set.',
     )
+    selection_mode = models.CharField(
+        max_length=20,
+        choices=SelectionMode.choices,
+        default=SelectionMode.LEGACY,
+        help_text='Selection strategy used for this run; recorded for evaluation.',
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     end_reason = models.CharField(max_length=20, choices=EndReason.choices, blank=True)
     score = models.PositiveIntegerField(default=0)
@@ -184,6 +198,10 @@ class TopScoreRun(models.Model):
         indexes = [
             models.Index(fields=('user', '-score')),
             models.Index(fields=('status', 'started_at')),
+            models.Index(
+                fields=('selection_mode', 'started_at'),
+                name='quiz_run_selection_date_idx',
+            ),
         ]
         constraints = [
             models.CheckConstraint(condition=Q(score__gte=0), name='top_score_run_score_nonnegative'),

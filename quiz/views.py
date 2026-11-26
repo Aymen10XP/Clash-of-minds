@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.audit import record_audit_event
+from .adaptive import choose_selection_mode, select_adaptive_question
 from .models import AnswerChoice, Question, Topic, TopScoreResponse, TopScoreRun
 
 
@@ -213,6 +214,7 @@ def sync_offline_runs(request):
                 client_run_id=client_run_id,
                 user=request.user,
                 topic=topic,
+                selection_mode=TopScoreRun.SelectionMode.OFFLINE,
             )
             score = 0
             terminal_reason = TopScoreRun.EndReason.QUIT
@@ -261,7 +263,25 @@ def _next_question(run):
         candidates = list(active.exclude(pk=run.current_question_id))
     if not candidates:
         candidates = list(active)
-    return random.choice(candidates) if candidates else None
+    if not candidates:
+        return None
+
+    if run.selection_mode in (
+        TopScoreRun.SelectionMode.LEGACY,
+        TopScoreRun.SelectionMode.RANDOM_CONTROL,
+        TopScoreRun.SelectionMode.OFFLINE,
+    ):
+        return random.choice(candidates)
+
+    question, actual_mode = select_adaptive_question(
+        run.user,
+        candidates,
+        run.selection_mode,
+    )
+    if actual_mode != run.selection_mode:
+        run.selection_mode = actual_mode
+        run.save(update_fields=('selection_mode',))
+    return question
 
 
 def _finish_run(run, reason):
@@ -302,7 +322,12 @@ def start_top_score(request):
         question_started_at=None,
     )
 
-    run = TopScoreRun.objects.create(user=request.user, topic=topic)
+    selection_mode = choose_selection_mode()
+    run = TopScoreRun.objects.create(
+        user=request.user,
+        topic=topic,
+        selection_mode=selection_mode,
+    )
     question = _next_question(run)
     if question is None:
         _finish_run(run, TopScoreRun.EndReason.QUIT)
@@ -317,6 +342,7 @@ def start_top_score(request):
         'score': run.score,
         'bestScore': _best_score(request.user),
         'timeLimitMs': ROUND_TIME_MS,
+        'selectionMode': run.selection_mode,
         'question': _question_payload(question),
     }, status=201)
 
@@ -381,6 +407,7 @@ def answer_top_score(request, client_run_id):
             'bestScore': _best_score(request.user),
             'gameOver': True,
             'endReason': reason,
+            'selectionMode': run.selection_mode,
         })
 
     run.score += 1
@@ -399,6 +426,7 @@ def answer_top_score(request, client_run_id):
         'score': run.score,
         'bestScore': max(_best_score(request.user), run.score),
         'gameOver': False,
+        'selectionMode': run.selection_mode,
         'question': _question_payload(next_question),
     })
 

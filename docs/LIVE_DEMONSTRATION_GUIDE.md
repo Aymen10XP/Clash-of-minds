@@ -59,8 +59,9 @@ Sign in as `demo_player`.
 
 1. Open VS Bot and start a practice game.
 2. Explain that Django verifies the selected choice and official score.
-3. Open Multiplayer and show player search/invitations.
-4. If both browser sessions are ready, invite the Firefox player, accept, ready both players, and answer one round.
+3. Open Top Score and point out the selection note. It identifies history-based adaptive practice, a trained experimental model, or a randomized comparison run. The neural label appears only after a real-data checkpoint has been trained and installed. See [Adaptive Question Selection](ADAPTIVE_QUESTION_SELECTION.md) for the data threshold and evaluation limits.
+4. Open Multiplayer and show player search/invitations.
+5. If both browser sessions are ready, invite the Firefox player, accept, ready both players, and answer one round.
 
 Say:
 
